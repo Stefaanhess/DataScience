@@ -1,24 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import threading,time
-from graphics.graphics import *
+from . graphics import *
 
 class Agent: 
     def __init__(self, pos, velo):
-        self.pos = pos
         self.velo = velo
         self.velo_temp = velo
         self.Point(pos[0],pos[1])
 
-x_list = []
-y_list =[]
 agents = []
-
 w = 2
 N = 100
 winWidth = 1000
 winHeight = 1000
-box_size = 10
    
 ### Updating the agents    
 
@@ -32,7 +27,8 @@ def draw_agents():
         ai.Point.draw(window)
 
 def find_nearest_neighbor(aj): 
-    distances = [np.linalg.norm(aj.pos - ai.pos) for ai in agents]
+    distances = [np.linalg.norm(np.array([aj.Point.getX(), aj.Point.getY()]) -
+                                np.array([ai.Point.getX(), ai.Point.getY()])) for ai in agents]
     distances[distances.index(0.0)] = max(distances)
     return(agents[distances.index(min(distances))])
 
@@ -42,13 +38,6 @@ def similar_direction_as_neighbour(aj):
     aj.velo_temp = aj.velo + w*ai.velo
     aj.velo_temp = (aj.velo_temp / np.linalg.norm(aj.velo_temp))
     return 
-
-# rename it to update velocity
-def go_towards_neighbour(aj):
-    ai = find_nearest_neighbor(aj)
-    aj.velo_temp = aj.velo + w * np.array([ai.pos[0] - aj.pos[0], ai.pos[1] - ai.pos[1]])
-    aj.velo_temp = (aj.velo_temp / np.linalg.norm(aj.velo_temp))
-    return
 
 def update_agents():
     for aj in agents:
