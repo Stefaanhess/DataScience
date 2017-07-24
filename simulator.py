@@ -12,26 +12,18 @@ x_list = []
 y_list =[]
 agents = []
 w = 0.5
-N = 4
+N = 20
    
 ### Updating the agents    
 
 def initialize():
     for i in range(N):
-        agents.append(Agent(10*np.random.random(2)-5,2*np.random.random(2)-1))
+        agents.append(Agent(10*np.random.random(2)-5,2*np.random.random(2)-1
 
-'''
 def find_nearest_neighbor(aj): 
-    distances = [np.linalg.norm(aj.velo - ai.velo) for ai in agents]
-    distances[distances.index(0.0)] = max(distances)
-    return(agents[distances.index(min(distances))])
-'''
-
-
-def find_nearest_neighbor(aj):
     distances = [np.linalg.norm(aj.pos - ai.pos) for ai in agents]
     distances[distances.index(0.0)] = max(distances)
-    return (agents[distances.index(min(distances[1:]))]) # ignores the distance to itself which is always 0
+    return(agents[distances.index(min(distances))])
 
 def similar_direction_as_neighbour(aj):
     ai = find_nearest_neighbor(aj)
