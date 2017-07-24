@@ -13,11 +13,12 @@ class Agent:
 x_list = []
 y_list =[]
 agents = []
+
 w = 2
 N = 100
 winWidth = 1000
 winHeight = 1000
-
+box_size = 10
    
 ### Updating the agents    
 
@@ -72,6 +73,8 @@ def move_agent(aj):
     elif y <= 0 or y >= winHeight:
         aj.Point.move(aj.velo[0], aj.velo[1]*(-1))
 
+    return
+
 ### Simulation
 
 def do_simulation():
@@ -87,5 +90,3 @@ window = GraphWin("Window", winWidth, winHeight)
 initialize()
 draw_agents()
 do_simulation()
-
-
