@@ -27,7 +27,7 @@ window = GraphWin("Window", winWidth, winHeight)
 
 def initialize():
     for i in range(N):
-        agents.append(Agent(winWidth*np.random.random(2),8*np.random.random(2)-4))
+        agents.append(Agent(winWidth/2*np.random.random(2)+winWidth*(1/4),2*np.random.random(2)-1))
     for ai in agents:
         ai.point.setFill("red")
 
@@ -58,47 +58,47 @@ def assimilate_velo(aj):
     elif aj.point.getCenter().getY() <= minB or aj.point.getCenter().getY() >= maxB:
         aj.velo_temp[1] = aj.velo_temp[1]*(-1)
 
-### Algorithm of Couzin (Class 2)
+def avoid_border_crossing(aj):
+    if aj.point.getCenter().getX() <= minB or aj.point.getCenter().getX() >= maxB:
+        aj.velo_temp[0] = aj.velo_temp[0]*(-1)
+    elif aj.point.getCenter().getY() <= minB or aj.point.getCenter().getY() >= maxB:
+        aj.velo_temp[1] = aj.velo_temp[1]*(-1)
 
-### Behavourial Rules of Zoning
+### Algorithm of Couzin (Class 2)
 
 # global parameter for all agents
 
-Rr = 10
-Ro = 40
-Ra = 80
-winWidth = 1000
+Rr = 30
+Ro = 30
+Ra = 45
 
 # calculate all distances to all agents
 def calculate_distances(aj):
     pos_dif = [ np.array([aj.point.getCenter().getX(), aj.point.getCenter().getY()]) -
                 np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY()]) for ai in agents]
-    dist = np.linalg.norm(np.array(pos_dif),axis=0)
+    dist = np.linalg.norm(np.array(pos_dif),axis=1)
     return([dist, pos_dif])
 
 
 # check for agents in repulsion, orientation or attraction zone
 
 def neighbours_in_zoneR(distances):
-     for i in range(len(distances)):
-        if(distances[i] > 0 and distances[i] < Rr):
-            return True
-        else:
-            return False
+    for i in range(len(distances)):
+        if(distances[i] > 0.0 and distances[i] < Rr):
+            return(True)
+    return(False)
 
 def neighbours_in_zoneO(distances):
     for i in range(len(distances)):
         if(distances[i] >= Rr and distances[i] < Ro):
-            return True
-        else:
-            return False
+            return(True)
+    return(False)
         
 def neighbours_in_zoneA(distances):
     for i in range(len(distances)):
         if(distances[i] >= Ro and distances[i] < Ra):
-            return True
-        else:
-            return False
+            return(True)
+    return(False)
 
 
 # calculate new direction according to agents in zones
@@ -106,8 +106,8 @@ def neighbours_in_zoneA(distances):
 def calculate_direction_R(dist, pos_dif):
     direct = np.zeros(2)
     for i in range(len(dist)):
-        if (dist[i] < Rr and dist[i] > 0):
-            direct -= pos_dif[i]/dist[i]
+        if (dist[i] < Rr and dist[i] > 0.0):
+            direct = direct - (pos_dif[i]/dist[i])
     return direct
 
 def calculate_direction_O(dist):
@@ -131,26 +131,30 @@ def asses_next_step(aj):
     dist = calculate_distances(aj)[0]
     pos_dif = calculate_distances(aj)[1]
 
-    if (neighbours_in_zoneR(dist)):
+    if (neighbours_in_zoneR(dist)==True):
         new_direct = calculate_direction_R(dist, pos_dif)
-        
-    elif (neighbours_in_zoneO(dist) and neighbours_in_zoneA(dist)):
-        new_direct = 0.5*(calculate_direction_A(dist, pos_dif) + calculate_direction_O(dist))
-
-    elif (neighbours_in_zoneO(dist)):
-        new_direct = calculate_direction_O(dist)
-
-    elif (neighbours_in_zoneA(dist)):
-        new_direct = calculate_direction_A(dist, pos_dif)
+        print("Fall 1")
+##        
+##    elif (neighbours_in_zoneO(dist)==True and neighbours_in_zoneA(dist)==True):
+##        new_direct = 0.5*(calculate_direction_A(dist, pos_dif) + calculate_direction_O(dist))
+## #       print("Fall 2")
+##
+##    elif (neighbours_in_zoneO(dist)==True):
+##        new_direct = calculate_direction_O(dist)
+## #      print("Fall 3")
+##
+##    elif (neighbours_in_zoneA(dist)==True):
+##        new_direct = calculate_direction_A(dist, pos_dif)
+## #       print("Fall 4")
 
     else:
         new_direct = np.zeros(2)
-
+        
     aj.velo_temp = aj.velo + new_direct
 
 # move the agent according to the velocity
 def move_agent(aj):
-    aj.point.move(aj.velo[0]+random.uniform(-3, 3),aj.velo[1]+random.uniform(-3, 3))
+    aj.point.move(aj.velo[0],aj.velo[1])
 
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
@@ -161,6 +165,7 @@ def update_agents():
         # Algo 2
         asses_next_step(aj)
     for ai in agents:
+        avoid_border_crossing(ai)
         ai.velo = ai.velo_temp
         move_agent(ai)
 
