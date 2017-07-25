@@ -87,7 +87,8 @@ def assimilate_velo(aj):
 Rr = 20
 Ro = 60
 Ra = 90
-norm = 5
+norm = 10
+max_turn = np.radians(40)
 
 # calculate all distances to all agents
 def calculate_distances(aj):
@@ -95,6 +96,25 @@ def calculate_distances(aj):
                 np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY()]) for ai in agents]
     dist = np.linalg.norm(np.array(pos_dif),axis=1)
     return([dist, pos_dif])
+
+# calculate angle between vectors
+def exceeded_angle(vec_a, vec_b, max_angle=max_turn):
+    angle = np.arccos(np.dot(vec_a, vec_b)/(np.linalg.norm(vec_a)*np.linalg.norm(vec_b)))
+    if np.abs(angle) > max_angle:
+        return np.sign(angle - max_angle)
+    return 0
+
+def set_angle(vec_old, vec_new, angle=max_turn):
+    exceeded = exceeded_angle(vec_old, vec_new, angle)
+    if exceeded == 0:
+        return vec_new
+    angle *= -exceeded
+    x, y = vec_old
+    x_new = x*np.cos(angle) - y*np.sin(angle)
+    y_new = x*np.sin(angle) + y*np.cos(angle)
+    vec_new = np.array((x_new, y_new))
+    vec_new = normalize(vec_new)
+    return vec_new
 
 
 # check for agents in repulsion, orientation or attraction zone
@@ -163,6 +183,8 @@ def asses_next_step(aj):
         new_direct = np.zeros(2)
 
     aj.velo_temp = normalize(aj.velo + new_direct)
+    aj.velo_temp = set_angle(aj.velo, aj.velo_temp)
+
 
 
 ### END OF MODULE 2
@@ -193,7 +215,7 @@ def do_simulation():
     window.getMouse()
 
 ### RUN IT
-    
+
 initialize()
 draw_agents()
 do_simulation()
