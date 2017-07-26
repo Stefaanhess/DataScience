@@ -24,16 +24,12 @@ winWidth = 400
 winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
 
-# turning points at border
-minB = 15
-maxB = winWidth-15
-
 # evaluation parameter
 mean_dist_list = []
 diviation_list = []
 
 # global parameter for all agents, all radius and speed
-norm = 6
+norm = 10
 
 ### Evaluation Functions
 
@@ -79,9 +75,9 @@ def draw_agents():
 
 # function to avoid border crossing
 def avoid_border_crossing(aj):
-    if aj.point.getCenter().getX() <= minB or aj.point.getCenter().getX() >= maxB:
+    if aj.point.getCenter().getX() + aj.velo_temp[0] <= 0 or aj.point.getCenter().getX() + aj.velo_temp[0] >= winWidth:
         aj.velo_temp[0] = aj.velo_temp[0]*(-1)
-    elif aj.point.getCenter().getY() <= minB or aj.point.getCenter().getY() >= maxB:
+    if aj.point.getCenter().getY() + aj.velo_temp[1] <= 0 or aj.point.getCenter().getY() + aj.velo_temp[1] >= winHeight:
         aj.velo_temp[1] = aj.velo_temp[1]*(-1)
 
 
@@ -108,9 +104,9 @@ def update_agents():
         # Algo 2
         #couzin_next_step(aj, agents, norm)
         # Algo 3
-        vicek_next_step(aj, agents, norm)
+        couzin_next_step(aj, agents, norm)
     for ai in agents:
-        allow_border_crossing(ai)
+        avoid_border_crossing(ai)
         ai.velo = ai.velo_temp
         move_agent(ai)
 
