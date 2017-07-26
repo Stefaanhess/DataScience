@@ -31,6 +31,14 @@ def calculate_distances(aj, agents):
     dist = np.linalg.norm(np.array(pos_dif),axis=1)
     return([dist, pos_dif])
 
+def calculate_distances_and_velo(aj, agents):
+    """Calculate distances to all agents
+
+    Returns distances from aj to all other agents and the vectors from aj to all other agents. 
+    """
+    values = [[np.linalg.norm(np.array([aj.point.getCenter().getX(), aj.point.getCenter().getY()]) -
+                np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY()])), ai.velo] for ai in agents]
+    return(values)
 
 
 # calculate angle between vectors

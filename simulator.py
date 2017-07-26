@@ -3,6 +3,7 @@ from graphics import *
 from helperfunctions import *
 from couzin import couzin_next_step
 from simple_model import assimilate_velo
+from vicsek import vicek_next_step
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,9 +19,9 @@ class Agent:
 ### GLOBAL PARAMETERS
 
 agents = []
-N = 40
-winWidth = 1000
-winHeight = 1000
+N = 30
+winWidth = 400
+winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
 
 # turning points at border
@@ -66,9 +67,10 @@ def plot_graphs():
 
 def initialize():
     for i in range(N):
-        agents.append(Agent(winWidth/2*np.random.random(2)+winWidth*(1/4),normalize(4*np.random.random(2)-2, norm)))
+        agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm)))
     for ai in agents:
         ai.point.setFill("red")
+    calculate_distances_and_velo(agents[2], agents)
 
 # draw the agents into the window to display them
 def draw_agents():
@@ -94,7 +96,9 @@ def update_agents():
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
         # Algo 2
-        couzin_next_step(aj, agents, norm)
+        #couzin_next_step(aj, agents, norm)
+        # Algo 3
+        vicek_next_step(aj, agents, norm)
     for ai in agents:
         avoid_border_crossing(ai)
         ai.velo = ai.velo_temp
