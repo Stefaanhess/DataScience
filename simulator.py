@@ -5,9 +5,7 @@ from couzin import couzin_next_step
 from simple_model import assimilate_velo
 
 import numpy as np
-import time
-import random
-import math
+import matplotlib.pyplot as plt
 
 ### CLASS AGENT
 
@@ -23,16 +21,46 @@ agents = []
 N = 40
 winWidth = 1000
 winHeight = 1000
+window = GraphWin("Window", winWidth, winHeight)
 
 # turning points at border
 minB = 15
 maxB = winWidth-15
 
+# evaluation parameter
+mean_dist_list = []
+diviation_list = []
 
 # global parameter for all agents, all radius and speed
 norm = 6
 
-window = GraphWin("Window", winWidth, winHeight)
+### Evaluation Functions
+
+# evaluate std and mean 
+def evaluate_current_timestep():
+    iu1 = np.triu_indices(len(agents),1)
+    dist_m = distance_matrix()
+    mean_dist_list.append(np.mean(dist_m[iu1]))
+    diviation_list.append(np.std(dist_m[iu1]))
+    
+# distance matrix
+def distance_matrix():
+    distances = []
+    for ai in agents:
+        distances.append(np.linalg.norm(np.array(
+            [np.array([aj.point.getCenter().getX(), aj.point.getCenter().getY()]) -
+             np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY()])
+             for aj in agents]),axis=1))
+    return(np.array(distances))
+
+# plot the graphs
+def plot_graphs():
+    f, axarr = plt.subplots(2, sharex=True)
+    axarr[0].plot(mean_dist_list)
+    axarr[0].set_ylabel('Mean Distance')
+    axarr[1].plot(diviation_list)
+    axarr[1].set_ylabel('Standard Deviation')
+    plt.show()
    
 ### SETTING UP THE WORLD    
 
@@ -74,12 +102,17 @@ def update_agents():
 
 ### Simulation
 def do_simulation():
-    for i in range(3000):
+    for i in range(10):
         update_agents()
+        evaluate_current_timestep()
+
     window.getMouse()
+    window.close()
 
 ### RUN IT
 
 initialize()
 draw_agents()
 do_simulation()
+
+plot_graphs()
