@@ -102,7 +102,7 @@ def update_agents():
 
 ### Simulation
 def do_simulation():
-    for i in range(10):
+    for i in range(10000):
         update_agents()
         evaluate_current_timestep()
 

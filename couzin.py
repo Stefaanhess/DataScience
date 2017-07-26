@@ -4,9 +4,9 @@ import numpy as np
 
 # Couzin parameters
 Rr = 20
-Ro = 60
-Ra = 90
-max_turn = np.radians(40)
+Ro = 150
+Ra = 300
+max_turn = 90
 
 def couzin_next_step(aj, agents, norm):
     """Asses the next step for a single agent according to the Couzin paper."""

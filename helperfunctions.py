@@ -31,18 +31,29 @@ def calculate_distances(aj, agents):
     dist = np.linalg.norm(np.array(pos_dif),axis=1)
     return([dist, pos_dif])
 
-    # calculate angle between vectors
-def exceeded_angle(vec_a, vec_b, max_angle=np.radians(40)):
-    angle = np.arccos(np.dot(vec_a, vec_b)/(np.linalg.norm(vec_a)*np.linalg.norm(vec_b)))
+
+
+# calculate angle between vectors
+def angle_between(p1, p2):
+    ang1 = np.arctan2(*p1[::-1])
+    ang2 = np.arctan2(*p2[::-1])
+    angle_360 = np.rad2deg((ang1 - ang2) % (2 * np.pi))
+    if angle_360 <= 180:
+        return angle_360
+    else:
+        return -1*(360 - angle_360)
+
+def exceeded_angle(vec_old, vec_new, max_angle):
+    angle = angle_between(vec_old, vec_new)
     if np.abs(angle) > max_angle:
-        return np.sign(angle - max_angle)
+        return np.sign(angle)
     return 0
 
-def set_angle(vec_old, vec_new, norm, angle=np.radians(40)):
-    exceeded = exceeded_angle(vec_old, vec_new, angle)
+def set_angle(vec_old, vec_new, norm, angle):
+    exceeded = -1*exceeded_angle(vec_old, vec_new, angle)
     if exceeded == 0:
         return vec_new
-    angle *= -exceeded
+    angle *= exceeded
     x, y = vec_old
     x_new = x*np.cos(angle) - y*np.sin(angle)
     y_new = x*np.sin(angle) + y*np.cos(angle)
