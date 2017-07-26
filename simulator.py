@@ -19,7 +19,7 @@ class Agent:
 ### GLOBAL PARAMETERS
 
 agents = []
-N = 30
+N = 60
 winWidth = 400
 winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
@@ -84,16 +84,6 @@ def avoid_border_crossing(aj):
     elif aj.point.getCenter().getY() <= minB or aj.point.getCenter().getY() >= maxB:
         aj.velo_temp[1] = aj.velo_temp[1]*(-1)
 
-# function to allow border crossing (not the case of the exact corner problem!)
-def allow_border_crossing(aj):
-    if aj.point.getCenter().getX() <= 0:
-        aj.point.move(winWidth,0)
-    elif  aj.point.getCenter().getX() >= winWidth:
-        aj.point.move(-winWidth,0)
-    elif  aj.point.getCenter().getY() <= 0:
-        aj.point.move(0,winHeight)
-    elif  aj.point.getCenter().getY() >= winHeight:
-        aj.point.move(0,-winHeight)
 
 # move the agent according to the velocity
 def move_agent(aj):
@@ -110,7 +100,7 @@ def update_agents():
         # Algo 3
         vicek_next_step(aj, agents, norm)
     for ai in agents:
-        allow_border_crossing(ai)
+        avoid_border_crossing(ai)
         ai.velo = ai.velo_temp
         move_agent(ai)
 

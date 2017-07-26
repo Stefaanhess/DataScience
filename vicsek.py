@@ -21,10 +21,6 @@ def get_average_velos_in_neighbourhood(aj, agents):
     return total_velo
 
 def add_noise(angle):
-	print("###")
-	print((np.random.rand()-0.5)*eta)
-	print(angle)
-    
 	return (np.random.rand()-0.5)*eta + angle
 
 def get_vector_from_angle(norm, angle):
