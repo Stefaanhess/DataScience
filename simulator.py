@@ -4,6 +4,7 @@ from helperfunctions import *
 from couzin import couzin_next_step
 from simple_model import assimilate_velo
 from vicsek import vicek_next_step
+from tempfile import TemporaryFile
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,10 +17,22 @@ class Agent:
         self.velo_temp = velo
         self.point = Circle(Point(pos[0],pos[1]),3)
 
-### GLOBAL PARAMETERS
+    def __str__(self):
+        return "velo = " + self.velo.__str__()  + "; position = (" + self.point.getCenter().getX().__str__() + ", " + self.point.getCenter().getY().__str__() +")"
 
+class Detection:
+    def __init__(self, x, y, deg):
+        self.x = x
+        self.y = y
+        self.orientation = deg
+    def data(self):
+        print(self.x,self.y,self.orientation)
+
+
+### GLOBAL PARAMETERS
+tracks = np.array([])
 agents = []
-N = 60
+N = 1
 winWidth = 400
 winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
@@ -70,7 +83,6 @@ def initialize():
         agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm)))
     for ai in agents:
         ai.point.setFill("red")
-    calculate_distances_and_velo(agents[2], agents)
 
 # draw the agents into the window to display them
 def draw_agents():
@@ -99,9 +111,12 @@ def allow_border_crossing(aj):
 def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
+
+tracks = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
 def update_agents():
+    global tracks
     for aj in agents:
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
@@ -111,15 +126,23 @@ def update_agents():
         vicek_next_step(aj, agents, norm)
     for ai in agents:
         allow_border_crossing(ai)
+        tracks.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
         ai.velo = ai.velo_temp
         move_agent(ai)
 
+
 ### Simulation
 def do_simulation():
-    for i in range(10000):
+    global tracks 
+    for i in range(5000):
+        print(i)
         update_agents()
         evaluate_current_timestep()
-
+    print("tracks")
+    tracks = np.asarray(tracks)
+    print(tracks.shape)
+    print(tracks)
+    np.save("Tracks", tracks)
     window.getMouse()
     window.close()
 
