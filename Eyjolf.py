@@ -67,6 +67,24 @@ def get_discretization_bins(data, bins):
     cutoffs = cutoffs[:-1]
     return cutoffs
 
+def get_equal_discretization_bins(data, bins):
+    """
+    create equally sized bins bewteen minium and maximum value,
+    excluding start- and endpoint
+
+    Parameters
+    ----------
+    data : ndarray
+        feature data of all agents concatenated
+    bins : int
+        number of bins
+    """
+    min_data = min(data)
+    max_data = max(data)
+    ret_bins = np.linspace(min_data, max_data, bins, endpoint=False)
+    ret_bins = np.delete(ret_bins, 0)
+    return ret_bins
+
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
 for feature_i in range(num_features):
