@@ -6,9 +6,11 @@ import tensorflow as tf
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-# small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
-# Split every track into multiple tracks of 150 length.
 def splitChunks(t):
+    """
+    Small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
+    Split every track into multiple tracks of 150 length.
+    """
     trackChunks = []
     while (len(t)>=min_track_length+track_smoothing_window_size+3):
         currentTrack = t[0:min_track_length+track_smoothing_window_size+2]
