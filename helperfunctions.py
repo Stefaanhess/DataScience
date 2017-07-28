@@ -68,3 +68,14 @@ def set_angle(vec_old, vec_new, norm, angle):
     vec_new = np.array((x_new, y_new))
     vec_new = normalize(vec_new, norm)
     return vec_new
+
+
+def prediction_error(simulated, predicted, max_difference = 90):
+    """
+    calculate angle deviation between simulated and predicted velocities
+    """
+    angle_difference = angle_between(simulated, predicted)
+    if np.abs(angle_difference) >= max_difference:
+        (1, 0, 0)
+    rel_diff = np.abs(angle_difference/max_difference)
+    return (rel_diff, 1-rel_diff, 0)
