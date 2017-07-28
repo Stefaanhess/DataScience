@@ -1,10 +1,12 @@
 Main Tasks:
 
-Sample more Data from different agents (GET THE TRACKS) -> start then with the tracks
-Include it into the model of Ben
-(Write new Bin-Function) // Interpret Bins!
+X Sample more Data from different agents (GET THE TRACKS) -> start then with the tracks
+X Include it into the model of Ben
+X Write new Bin-Function
+
 Predict next step in Visualization || How green how well predicted
 Plot the error Visualize val error 
+
 Predict whole path in Visualization of one Agent (no update anymore)
 All RNN or one RNN and many Couzins 
 

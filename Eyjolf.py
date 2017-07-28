@@ -51,24 +51,22 @@ tracks = list(filter(lambda t: len(t) > min_track_length + track_smoothing_windo
 tracks = list(map(np.array, tracks))
 num_features = tracks[0].shape[-1]
 
-def smoothen_track(track, std=track_smoothing_std):
-    track_smooth = pd.DataFrame(track).rolling(window=track_smoothing_window_size, win_type='gaussian')
-    return track_smooth.mean(std=std).as_matrix()[track_smoothing_window_size:]
-
-tracks = list(map(smoothen_track, tracks))
-tracks = list(map(lambda t: np.diff(t, axis=0), tracks))
-
 plt.scatter(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]))
 plt.plot(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]), '--')
+plt.show()
 
-
-
+# not used at the moment
 def get_discretization_bins(data, bins):
+    """
+    Bens Function for dynamic bins of same size
+    """
     split = np.array_split(np.sort(data), bins)
     cutoffs = [x[-1] for x in split]
     cutoffs = cutoffs[:-1]
     return cutoffs
 
+# our own static bins function
+# TODO min & max substitute with norm
 def get_equal_discretization_bins(data, bins):
     """
     create equally sized bins bewteen minium and maximum value,
@@ -87,28 +85,26 @@ def get_equal_discretization_bins(data, bins):
     ret_bins = np.delete(ret_bins, 0)
     return ret_bins
 
+# Find out the bins
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
 for feature_i in range(num_features):
-    discretization_bins.append(
-        get_discretization_bins(concatenated_tracks[:, feature_i], 
-                                num_discretization_bins))
+    discretization_bins.append(get_equal_discretization_bins(concatenated_tracks[:, feature_i], num_discretization_bins))
 del(concatenated_tracks)
 
+# Digitize all values into the bins
 def digitize_track(track):
     for feature_i in range(num_features):
         track[:, feature_i] = np.digitize(track[:, feature_i], discretization_bins[feature_i], right=True)
     return track.astype(np.int32)
 
 
+### MODEL SET UP BEGINS
+
 np.random.shuffle(tracks)
 train_tracks = tracks[:int(.8 * len(tracks))]
 val_tracks = tracks[int(.8 * len(tracks)):]
 print(len(train_tracks), len(val_tracks))
-
-#num_hidden = 32
-#batch_size = 22
-
 
 tf.reset_default_graph()
 

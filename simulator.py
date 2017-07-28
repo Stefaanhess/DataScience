@@ -20,19 +20,10 @@ class Agent:
     def __str__(self):
         return "velo = " + self.velo.__str__()  + "; position = (" + self.point.getCenter().getX().__str__() + ", " + self.point.getCenter().getY().__str__() +")"
 
-class Detection:
-    def __init__(self, x, y, deg):
-        self.x = x
-        self.y = y
-        self.orientation = deg
-    def data(self):
-        print(self.x,self.y,self.orientation)
-
-
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 5
+N = 40
 winWidth = 400
 winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
@@ -42,7 +33,7 @@ mean_dist_list = []
 diviation_list = []
 
 # global parameter for all agents, all radius and speed
-norm = 10
+norm = 5
 
 ### Evaluation Functions
 
@@ -78,7 +69,7 @@ def initialize():
     for i in range(N):
         agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm)))
     for ai in agents:
-        ai.point.setFill("red")
+        ai.point.setFill('red')
 
 # draw the agents into the window to display them
 def draw_agents():
@@ -129,7 +120,7 @@ def update_agents():
 
 ### Simulation
 def do_simulation():
-    for i in range(10):
+    for i in range(100):
         update_agents()
         evaluate_current_timestep()
     window.close()
@@ -142,5 +133,4 @@ do_simulation()
 
 np_tracks = np.asarray(track_all)
 np_tracks = np.swapaxes(np_tracks,0,1)
-print(np_track.shape)
 np.save("Tracks", np_tracks)
