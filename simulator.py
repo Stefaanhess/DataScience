@@ -113,52 +113,6 @@ def allow_border_crossing(aj):
     elif  aj.point.getCenter().getY() >= winHeight:
         aj.point.move(0,-winHeight)
 
-def trace_ray(rayO, rayD):
-    # Find first point of intersection with the scene.
-    dist_intersect = 0 #
-    for i, aj in enumerate(agents):
-        is_intersect, pos_intersect = intersect_sphere(rayO, rayD, aj.getPos(), 1) #radius 
-        #intersect(rayO, rayD, obj)
-        if is_intersect:
-            print(pos_intersect)
-            dist_intersect = np.linalg.norm(pos_intersect, rayO)
-    # Return None if the ray does not intersect any object.
-    return dist_intersect
-
-
-def intersect_sphere(origin, dest, center, r):
-    # Return the distance from O to the intersection of the ray (O, D) with the 
-    # sphere (S, R), or +inf if there is no intersection.
-    # O and S are 3D points, D (direction) is a normalized vector, R is a scalar.
-    print("gogogo")
-    print(origin)
-    print(dest)
-    print(center)
-    print(r)
-    dist_vec = dest - origin
-    f = origin - center
-    a = np.dot(dist_vec,dist_vec)
-    b = 2 * np.dot(f, dist_vec)
-    c = np.dot(f,f) - r * r
-
-    disc = b * b - 4 * a * c
-    if disc < 0:
-        #No intersection
-        return [False, 0]
-    else:
-        discSqrt = np.sqrt(disc)
-        t1 = (-b - discSqrt) / 2.0 
-        t2 = (-b + discSqrt) / 2.0
-        if(t1>=0 and t1<=1):
-            # intersection in t1
-            return [True, t1 * origin + dist_vec]
-        if(t2>=0 and t2<=1): 
-            # intersection, but not in t1
-            # started inside the sphere
-            return [False, 0]
-        # completely inside
-        return [False, 0]
-
 
 # move the agent according to the velocity
 def move_agent(aj):
@@ -182,9 +136,6 @@ def update_agents():
         tracks.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
         ai.velo = ai.velo_temp
         move_agent(ai)
-        for j in np.arange(0.0, 1.0, 0.001):
-            dist = trace_ray(np.array([0,0]), np.array([j * winWidth, winWidth]))
-
 
 ### Simulation
 def do_simulation():
