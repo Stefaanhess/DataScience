@@ -131,13 +131,34 @@ def update_agents():
 
 ### Simulation
 def do_simulation():
-    for i in range(100):
+    for i in range(10):
         update_agents()
         evaluate_current_timestep()
     window.close()
 
-### RUN IT
+def get_agents_in_sight(ai, agents, radius, num_bins = 36):
+    """
+    seperate environment of an agent into bins and find nearest neighbour for all bins.
+    """
+    bins = np.zeros(num_bins)
+    borders = np.linspace(-180, 180, num_bins + 1)
+    directions = [agent.getPos()-ai.getPos() for agent in agents if 0 < np.linalg.norm(agent.getPos()-ai.getPos()) <= radius]
+    angles = [[angle_between(ai.velo, direction), direction] for direction in directions]
+    for angle in angles:
+        for i in range(len(borders)-1):
+            if angle[0] <= borders[i+1]:
+                bins[i] = max([bins[i], (radius - np.linalg.norm(angle[1]))/radius])
+                break
+    return bins
 
+
+
+
+
+
+
+### RUN IT
+plt.ion()
 initialize()
 draw_agents()
 do_simulation()
