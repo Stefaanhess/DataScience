@@ -1,6 +1,6 @@
 from helperfunctions import *
 
-r = 20
+r = 35
 ref_vector = [1,0]
 eta = 20
 

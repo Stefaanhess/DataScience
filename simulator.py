@@ -17,6 +17,16 @@ class Agent:
         self.velo_temp = velo
         self.point = Circle(Point(pos[0],pos[1]),3)
 
+    def getX(self): 
+        return self.point.getCenter().getX()
+
+    def getY(self):
+        return self.point.getCenter().getY()
+
+    def getPos(self):
+        return np.array([self.getX(), self.getY()])
+
+
     def __str__(self):
         return "velo = " + self.velo.__str__()  + "; position = (" + self.point.getCenter().getX().__str__() + ", " + self.point.getCenter().getY().__str__() +")"
 
@@ -32,9 +42,9 @@ class Detection:
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 1
-winWidth = 400
-winHeight = 400
+N = 40
+winWidth = 100
+winHeight = 100
 window = GraphWin("Window", winWidth, winHeight)
 
 # evaluation parameter
@@ -103,6 +113,53 @@ def allow_border_crossing(aj):
     elif  aj.point.getCenter().getY() >= winHeight:
         aj.point.move(0,-winHeight)
 
+def trace_ray(rayO, rayD):
+    # Find first point of intersection with the scene.
+    dist_intersect = 0 #
+    for i, aj in enumerate(agents):
+        is_intersect, pos_intersect = intersect_sphere(rayO, rayD, aj.getPos(), 1) #radius 
+        #intersect(rayO, rayD, obj)
+        if is_intersect:
+            print(pos_intersect)
+            dist_intersect = np.linalg.norm(pos_intersect, rayO)
+    # Return None if the ray does not intersect any object.
+    return dist_intersect
+
+
+def intersect_sphere(origin, dest, center, r):
+    # Return the distance from O to the intersection of the ray (O, D) with the 
+    # sphere (S, R), or +inf if there is no intersection.
+    # O and S are 3D points, D (direction) is a normalized vector, R is a scalar.
+    print("gogogo")
+    print(origin)
+    print(dest)
+    print(center)
+    print(r)
+    dist_vec = dest - origin
+    f = origin - center
+    a = np.dot(dist_vec,dist_vec)
+    b = 2 * np.dot(f, dist_vec)
+    c = np.dot(f,f) - r * r
+
+    disc = b * b - 4 * a * c
+    if disc < 0:
+        #No intersection
+        return [False, 0]
+    else:
+        discSqrt = np.sqrt(disc)
+        t1 = (-b - discSqrt) / 2.0 
+        t2 = (-b + discSqrt) / 2.0
+        if(t1>=0 and t1<=1):
+            # intersection in t1
+            return [True, t1 * origin + dist_vec]
+        if(t2>=0 and t2<=1): 
+            # intersection, but not in t1
+            # started inside the sphere
+            return [False, 0]
+        # completely inside
+        return [False, 0]
+
+
 # move the agent according to the velocity
 def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
@@ -119,12 +176,14 @@ def update_agents():
         # Algo 2
         #couzin_next_step(aj, agents, norm)
         # Algo 3
-        couzin_next_step(aj, agents, norm)
+        vicek_next_step
     for ai in agents:
         allow_border_crossing(ai)
         tracks.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
         ai.velo = ai.velo_temp
         move_agent(ai)
+        for j in np.arange(0.0, 1.0, 0.001):
+            dist = trace_ray(np.array([0,0]), np.array([j * winWidth, winWidth]))
 
 
 ### Simulation
