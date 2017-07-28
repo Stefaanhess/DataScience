@@ -92,7 +92,7 @@ def preprocess_track(track):
     return [preprocess_detection(detection) for detection in track]
 
 
-
+)
 tracks = [preprocess_track(track) for track in tracks]
 tracks = list(filter(lambda t: len(t) > min_track_length + track_smoothing_window_size + 1, tracks))
 tracks = list(map(np.array, tracks))
@@ -117,6 +117,24 @@ def get_discretization_bins(data, bins):
     cutoffs = [x[-1] for x in split]
     cutoffs = cutoffs[:-1]
     return cutoffs
+
+def get_equal_discretization_bins(data, bins):
+    """
+    create equally sized bins bewteen minium and maximum value,
+    excluding start- and endpoint
+
+    Parameters
+    ----------
+    data : ndarray
+        feature data of all agents concatenated
+    bins : int
+        number of bins
+    """
+    min_data = min(data)
+    max_data = max(data)
+    ret_bins = np.linspace(min_data, max_data, bins, endpoint=False)
+    ret_bins = np.delete(ret_bins, 0)
+    return ret_bins
 
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
