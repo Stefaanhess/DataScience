@@ -3,24 +3,11 @@ import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from hdbscan import HDBSCAN
 from sklearn.manifold import TSNE
-import os
 import matplotlib.pyplot as plt
 
-
-class Detection:
-    def __init__(self, x, y, deg):
-        self.x = x
-        self.y = y
-        self.orientation = deg
-    def data(self):
-        print(self.x,self.y,self.orientation)
- 
-
-
-#small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
-#So be split every track into multiple tracks of 150 length.
+# small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
+# Split every track into multiple tracks of 150 length.
 def splitChunks(t):
     trackChunks = []
     while (len(t)>=min_track_length+track_smoothing_window_size+3):
@@ -29,71 +16,35 @@ def splitChunks(t):
         trackChunks = trackChunks + [currentTrack]
     return trackChunks
 
-
-
-def getTracks(f):
-    i = 0
-    tracks = []
-    for line in f:
-        i = i+1
-        if (i<50):
-            continue
-        if (i%15 != 0): #really cheap way to sparse out data...
-            continue
-        l = line.split(';')
-        try:
-            d = Detection(float(l[9]), float(l[10]), float(l[11]))
-            tracks = tracks + [d]
-        except:
-            break
-    chunks = splitChunks(tracks)
-    #print(chunks)
-    return chunks
-
-
-
-def readDir(file):
-    array = np.load(file)
+def split_all_tracks(np_array):
+    """
+    Splits all single tracks into multiple tracks via the splitChunks method
+    """
+    list_tracks = np_array.ndarray.tolist()
     print(array)
     tracks = []
-    #f = open(folder, 'r')
-    for x in array:
-        d = Detection(float(x[0]), float(x[1]), float(x[2]))
-        tracks = tracks + [d]
-    chunks = splitChunks(tracks)
-    return chunks
+    for track in list_tracks:
+        chunks = splitChunks(track)
+        tracks = tracks + [chunks]
+    return tracks
 
+### Variables of the algorithm
 
+np_tracks = np.load("Tracks.npy")
+tracks = split_all_tracks(np_tracks) # optional, only if we want to split our tracks
 
-track_path = 'Path to Tracks'
-min_track_length = 50
+min_track_length = 150
 track_smoothing_window_size = 15
 track_smoothing_std = .5
 num_discretization_bins = 12
-print("test")
-tracks = readDir(track_path)
 
 num_batches = 100
 num_hidden = 12
 batch_size = 5
 
+### End of Variables of the algorithm 
 
-
-#Hier steht: [[detection]]
-print(tracks)
-
-
-def preprocess_detection(detection):
-    #print(detection)
-    return detection.x, detection.y, np.cos(detection.orientation), np.sin(detection.orientation)
-
-def preprocess_track(track):
-    #print(track)
-    return [preprocess_detection(detection) for detection in track]
-
-
-
-tracks = [preprocess_track(track) for track in tracks]
+# optional try to avoid tracks that are too short
 tracks = list(filter(lambda t: len(t) > min_track_length + track_smoothing_window_size + 1, tracks))
 tracks = list(map(np.array, tracks))
 num_features = tracks[0].shape[-1]
@@ -104,8 +55,6 @@ def smoothen_track(track, std=track_smoothing_std):
 
 tracks = list(map(smoothen_track, tracks))
 tracks = list(map(lambda t: np.diff(t, axis=0), tracks))
-
-
 
 plt.scatter(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]))
 plt.plot(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]), '--')
