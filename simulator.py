@@ -32,7 +32,7 @@ class Detection:
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 1
+N = 5
 winWidth = 400
 winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
@@ -108,12 +108,11 @@ def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
 
-track_t = []
 track_all = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
 def update_agents():
-    global tracks
+    track_t = []
     for aj in agents:
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
@@ -128,10 +127,8 @@ def update_agents():
         move_agent(ai)
     track_all.append(track_t)
 
-
 ### Simulation
 def do_simulation():
-    global tracks 
     for i in range(10):
         update_agents()
         evaluate_current_timestep()
@@ -144,5 +141,6 @@ draw_agents()
 do_simulation()
 
 np_track = np.asarray(track_all)
+np_track = np.swapaxes(np_track,0,1)
 print(np_track.shape)
 # np.save("Tracks", tracks)
