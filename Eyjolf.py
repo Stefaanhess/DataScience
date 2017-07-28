@@ -35,7 +35,7 @@ def split_all_tracks(np_array):
 np_tracks = np.load("Tracks.npy")
 tracks = split_all_tracks(np_tracks) # optional, only if we want to split our tracks
 
-min_track_length = 150
+min_track_length = 50
 track_smoothing_window_size = 15
 track_smoothing_std = .5
 num_discretization_bins = 12
@@ -144,12 +144,13 @@ with tf.variable_scope('generator'):
         gen_hidden_0, dtype=tf.float32, scope='gen_features')
     gen_output = tf.reshape(gen_output,
         (tf.shape(gen_output)[0], tf.shape(gen_output)[1], num_features, num_discretization_bins))
-    
+
+# LOSS FUNCTION    
 loss = tf.reduce_mean(
     tf.nn.sparse_softmax_cross_entropy_with_logits(
         labels=targets, logits=gen_output))
 
-
+# 
 optimizer = tf.train.AdamOptimizer(0.01)
 
 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
