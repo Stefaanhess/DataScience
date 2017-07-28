@@ -3,24 +3,11 @@ import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from hdbscan import HDBSCAN
 from sklearn.manifold import TSNE
-import os
 import matplotlib.pyplot as plt
 
-
-class Detection:
-    def __init__(self, x, y, deg):
-        self.x = x
-        self.y = y
-        self.orientation = deg
-    def data(self):
-        print(self.x,self.y,self.orientation)
- 
-
-
-#small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
-#So be split every track into multiple tracks of 150 length.
+# small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
+# Split every track into multiple tracks of 150 length.
 def splitChunks(t):
     trackChunks = []
     while (len(t)>=min_track_length+track_smoothing_window_size+3):
@@ -29,71 +16,35 @@ def splitChunks(t):
         trackChunks = trackChunks + [currentTrack]
     return trackChunks
 
-
-
-def getTracks(f):
-    i = 0
-    tracks = []
-    for line in f:
-        i = i+1
-        if (i<50):
-            continue
-        if (i%15 != 0): #really cheap way to sparse out data...
-            continue
-        l = line.split(';')
-        try:
-            d = Detection(float(l[9]), float(l[10]), float(l[11]))
-            tracks = tracks + [d]
-        except:
-            break
-    chunks = splitChunks(tracks)
-    #print(chunks)
-    return chunks
-
-
-
-def readDir(file):
-    array = np.load(file)
+def split_all_tracks(np_array):
+    """
+    Splits all single tracks into multiple tracks via the splitChunks method
+    """
+    list_tracks = np_array.ndarray.tolist()
     print(array)
     tracks = []
-    #f = open(folder, 'r')
-    for x in array:
-        d = Detection(float(x[0]), float(x[1]), float(x[2]))
-        tracks = tracks + [d]
-    chunks = splitChunks(tracks)
-    return chunks
+    for track in list_tracks:
+        chunks = splitChunks(track)
+        tracks = tracks + [chunks]
+    return tracks
 
+### Variables of the algorithm
 
+np_tracks = np.load("Tracks.npy")
+tracks = split_all_tracks(np_tracks) # optional, only if we want to split our tracks
 
-track_path = 'Path to Tracks'
-min_track_length = 50
+min_track_length = 150
 track_smoothing_window_size = 15
 track_smoothing_std = .5
 num_discretization_bins = 12
-print("test")
-tracks = readDir(track_path)
 
 num_batches = 100
 num_hidden = 12
 batch_size = 5
 
+### End of Variables of the algorithm 
 
-
-#Hier steht: [[detection]]
-print(tracks)
-
-
-def preprocess_detection(detection):
-    #print(detection)
-    return detection.x, detection.y, np.cos(detection.orientation), np.sin(detection.orientation)
-
-def preprocess_track(track):
-    #print(track)
-    return [preprocess_detection(detection) for detection in track]
-
-
-
-tracks = [preprocess_track(track) for track in tracks]
+# optional try to avoid tracks that are too short
 tracks = list(filter(lambda t: len(t) > min_track_length + track_smoothing_window_size + 1, tracks))
 tracks = list(map(np.array, tracks))
 num_features = tracks[0].shape[-1]
@@ -105,8 +56,6 @@ def smoothen_track(track, std=track_smoothing_std):
 tracks = list(map(smoothen_track, tracks))
 tracks = list(map(lambda t: np.diff(t, axis=0), tracks))
 
-
-
 plt.scatter(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]))
 plt.plot(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]), '--')
 
@@ -117,6 +66,24 @@ def get_discretization_bins(data, bins):
     cutoffs = [x[-1] for x in split]
     cutoffs = cutoffs[:-1]
     return cutoffs
+
+def get_equal_discretization_bins(data, bins):
+    """
+    create equally sized bins bewteen minium and maximum value,
+    excluding start- and endpoint
+
+    Parameters
+    ----------
+    data : ndarray
+        feature data of all agents concatenated
+    bins : int
+        number of bins
+    """
+    min_data = min(data)
+    max_data = max(data)
+    ret_bins = np.linspace(min_data, max_data, bins, endpoint=False)
+    ret_bins = np.delete(ret_bins, 0)
+    return ret_bins
 
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
@@ -230,64 +197,3 @@ for batch_idx in range(num_batches):
 plt.plot(pd.Series(train_losses).rolling(100).mean(), label='train-logloss')
 plt.plot(pd.Series(val_losses).rolling(100).mean(), label='val-logloss')
 plt.legend()
-
-
-val_gen = data_generator(val_tracks, size=16)
-samples_continuous, _ = next(val_gen)
-
-disc_hidden = []
-disc_hidden_2d = []
-disc_hidden_labels = []
-
-for hidden in (disc_hidden_2, disc_hidden_1, disc_hidden_0):
-    hidden_states = session.run(hidden, feed_dict={track_continuous: samples_continuous})
-    hidden_states = hidden_states.reshape((-1, hidden_states.shape[-1]))
-    hidden_states_2d = TSNE().fit_transform(hidden_states.astype(np.float64))
-    clusterer = HDBSCAN(min_cluster_size=25)
-    cluster_labels = clusterer.fit_predict(hidden_states)
-    disc_hidden.append(hidden_states)
-    disc_hidden_2d.append(hidden_states_2d)
-    disc_hidden_labels.append(cluster_labels)
-
-gen_hidden = []
-gen_hidden_2d = []
-gen_hidden_labels = []
-
-for hidden in (gen_hidden_2, gen_hidden_1, gen_hidden_0):
-    hidden_states = session.run(hidden, feed_dict={track_continuous: samples_continuous})
-    hidden_states = hidden_states.reshape((-1, hidden_states.shape[-1]))
-    hidden_states_2d = TSNE().fit_transform(hidden_states.astype(np.float64))
-    clusterer = HDBSCAN(min_cluster_size=25)
-    cluster_labels = clusterer.fit_predict(hidden_states)
-    gen_hidden.append(hidden_states)
-    gen_hidden_2d.append(hidden_states_2d)
-    gen_hidden_labels.append(cluster_labels)
-
-
-fig, axes = plt.subplots(3, 2, figsize=(12, 12))
-
-for idx, (hidden, hidden_2d, clusters) in enumerate(zip(disc_hidden, disc_hidden_2d, disc_hidden_labels)):
-    cluster_indices = np.where(clusters != -1)[0]
-    
-    axes[idx, 0].scatter(hidden_2d[:, 0], hidden_2d[:, 1], alpha=.01)
-    axes[idx, 0].scatter(hidden_2d[cluster_indices, 0], 
-                         hidden_2d[cluster_indices, 1], 
-                         alpha=.1, c=clusters[cluster_indices],
-                         cmap=plt.cm.jet)
-    axes[idx, 0].set_axis_off()
-    
-axes[0, 0].set_title('Discriminative')
-    
-for idx, (hidden, hidden_2d, clusters) in enumerate(zip(gen_hidden, gen_hidden_2d, gen_hidden_labels)):
-    cluster_indices = np.where(clusters != -1)[0]
-    
-    axes[idx, 1].scatter(hidden_2d[:, 0], hidden_2d[:, 1], alpha=.01)
-    axes[idx, 1].scatter(hidden_2d[cluster_indices, 0], 
-                         hidden_2d[cluster_indices, 1], 
-                         alpha=.1, c=clusters[cluster_indices],
-                         cmap=plt.cm.jet)
-    axes[idx, 1].set_axis_off()
-    
-axes[0, 1].set_title('Generative')
-    
-_ = plt.suptitle('TSNE of hidden states with HDBSCAN clusters')

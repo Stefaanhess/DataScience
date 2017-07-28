@@ -42,9 +42,9 @@ class Detection:
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 40
-winWidth = 100
-winHeight = 100
+N = 5
+winWidth = 400
+winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
 
 # evaluation parameter
@@ -119,11 +119,11 @@ def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
 
-tracks = []
+track_all = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
 def update_agents():
-    global tracks
+    track_t = []
     for aj in agents:
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
@@ -133,23 +133,16 @@ def update_agents():
         vicek_next_step
     for ai in agents:
         allow_border_crossing(ai)
-        tracks.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
+        track_t.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
         ai.velo = ai.velo_temp
         move_agent(ai)
+    track_all.append(track_t)
 
 ### Simulation
 def do_simulation():
-    global tracks 
-    for i in range(5000):
-        print(i)
+    for i in range(10):
         update_agents()
         evaluate_current_timestep()
-    print("tracks")
-    tracks = np.asarray(tracks)
-    print(tracks.shape)
-    print(tracks)
-    np.save("Tracks", tracks)
-    window.getMouse()
     window.close()
 
 ### RUN IT
@@ -158,4 +151,7 @@ initialize()
 draw_agents()
 do_simulation()
 
-plot_graphs()
+np_tracks = np.asarray(track_all)
+np_tracks = np.swapaxes(np_tracks,0,1)
+print(np_track.shape)
+np.save("Tracks", np_tracks)
