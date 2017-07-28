@@ -108,7 +108,8 @@ def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
 
-tracks = []
+track_t = []
+track_all = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
 def update_agents():
@@ -122,24 +123,18 @@ def update_agents():
         couzin_next_step(aj, agents, norm)
     for ai in agents:
         allow_border_crossing(ai)
-        tracks.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
+        track_t.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
         ai.velo = ai.velo_temp
         move_agent(ai)
+    track_all.append(track_t)
 
 
 ### Simulation
 def do_simulation():
     global tracks 
-    for i in range(5000):
-        print(i)
+    for i in range(10):
         update_agents()
         evaluate_current_timestep()
-    print("tracks")
-    tracks = np.asarray(tracks)
-    print(tracks.shape)
-    print(tracks)
-    np.save("Tracks", tracks)
-    window.getMouse()
     window.close()
 
 ### RUN IT
@@ -148,4 +143,6 @@ initialize()
 draw_agents()
 do_simulation()
 
-plot_graphs()
+np_track = np.asarray(track_all)
+print(np_track.shape)
+# np.save("Tracks", tracks)
