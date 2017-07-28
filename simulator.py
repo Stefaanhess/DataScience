@@ -5,6 +5,7 @@ from couzin import couzin_next_step
 from simple_model import assimilate_velo
 from vicsek import vicek_next_step
 from tempfile import TemporaryFile
+import colorsys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,10 +13,11 @@ import matplotlib.pyplot as plt
 ### CLASS AGENT
 
 class Agent:
-    def __init__(self, pos, velo):
+    def __init__(self, pos, velo, color):
         self.velo = velo
         self.velo_temp = velo
         self.point = Circle(Point(pos[0],pos[1]),3)
+        self.point.setFill(color)
 
     def getX(self): 
         return self.point.getCenter().getX()
@@ -26,6 +28,8 @@ class Agent:
     def getPos(self):
         return np.array([self.getX(), self.getY()])
 
+    def setColor(self,color):
+        self.point.setFill(color)
 
     def __str__(self):
         return "velo = " + self.velo.__str__()  + "; position = (" + self.point.getCenter().getX().__str__() + ", " + self.point.getCenter().getY().__str__() +")"
@@ -33,7 +37,7 @@ class Agent:
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 40
+N = 20
 winWidth = 400
 winHeight = 400
 window = GraphWin("Window", winWidth, winHeight)
@@ -77,9 +81,7 @@ def plot_graphs():
 
 def initialize():
     for i in range(N):
-        agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm)))
-    for ai in agents:
-        ai.point.setFill('red')
+        agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm),'red'))
 
 # draw the agents into the window to display them
 def draw_agents():
@@ -104,12 +106,17 @@ def allow_border_crossing(aj):
     elif  aj.point.getCenter().getY() >= winHeight:
         aj.point.move(0,-winHeight)
 
-
 # move the agent according to the velocity
 def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
-
+# TODO update color according to error in prediction
+def update_color(aj):
+    # c = angle_error() # needs real value and estimated one!
+    t = colorsys.hsv_to_rgb((c*0.33),0.8,0.8)
+    t = np.array(t)*255
+    aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
+    
 track_all = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
@@ -119,9 +126,9 @@ def update_agents():
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
         # Algo 2
-        #couzin_next_step(aj, agents, norm)
+        couzin_next_step(aj, agents, norm)
         # Algo 3
-        vicek_next_step
+        # vicek_next_step
     for ai in agents:
         allow_border_crossing(ai)
         track_t.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
@@ -131,7 +138,7 @@ def update_agents():
 
 ### Simulation
 def do_simulation():
-    for i in range(100):
+    for i in range(1000):
         update_agents()
         evaluate_current_timestep()
     window.close()

@@ -70,7 +70,7 @@ def set_angle(vec_old, vec_new, norm, angle):
     return vec_new
 
 
-def prediction_error(simulated, predicted, max_difference = 90):
+def angle_error(simulated, predicted, max_difference = 90):
     """
     calculate angle deviation between simulated and predicted velocities
     """
