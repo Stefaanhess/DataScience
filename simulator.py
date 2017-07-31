@@ -6,6 +6,7 @@ from simple_model import assimilate_velo
 from vicsek import vicek_next_step
 from tempfile import TemporaryFile
 import colorsys
+import tensorflow as tf
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ class Agent:
         self.velo_temp = velo
         self.point = Circle(Point(pos[0],pos[1]),3)
         self.point.setFill(color)
+        self.history = []
 
     def getX(self): 
         return self.point.getCenter().getX()
@@ -31,13 +33,19 @@ class Agent:
     def setColor(self,color):
         self.point.setFill(color)
 
+    def appendTimestep(self, radius):
+        array = np.array([self.getX, self.getY(), self.velo[0], self.velo[1]])
+        bins = get_agents_in_sight(self, agents, radius)
+        wall_bins = get_walls_in_sight(self, radius=radius)
+        self.history.append(np.concatenate([array,bins, wall_bins]))
+
     def __str__(self):
         return "velo = " + self.velo.__str__()  + "; position = (" + self.point.getCenter().getX().__str__() + ", " + self.point.getCenter().getY().__str__() +")"
 
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 1
+N = 6
 winWidth = 700
 winHeight = 700
 window = GraphWin("Window", winWidth, winHeight)
@@ -116,12 +124,15 @@ def update_color(aj):
     t = colorsys.hsv_to_rgb((c*0.33),0.8,0.8)
     t = np.array(t)*255
     aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
-    
+
+with tf.Session() as sess: 
+    saver = tf.train.import_meta_graph('meta_graph_1')
+    saver.restore(sess, 'my-model_1')
+
 track_all = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
 def update_agents():
-    track_t = []
     for aj in agents:
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
@@ -131,15 +142,12 @@ def update_agents():
         # vicek_next_step
     for ai in agents:
         avoid_border_crossing(ai)
-        array = np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), ai.velo[0], ai.velo[1]])
-        bins = get_agents_in_sight(ai,agents,200)
-        wall_bins = get_walls_in_sight(ai, radius=100)
-        #plt.bar(np.arange(len(wall_bins)), wall_bins)
-        #plt.show()
-        track_t.append(np.concatenate([array,bins]))
+        ai.appendTimestep(200)
+        #train = np.expand_dims(np.array(ai.history[-50:]), axis=0)
+        #print(sess.run(['generator/gen_output:0'], feed_dict={'track_continuous': train,
+        #                                      'track_discrete': train}))
         ai.velo = ai.velo_temp
         move_agent(ai)
-    track_all.append(track_t)
 
 ### Simulation
 def do_simulation():
@@ -186,6 +194,6 @@ initialize()
 draw_agents()
 do_simulation()
 
-np_tracks = np.asarray(track_all)
-np_tracks = np.swapaxes(np_tracks,0,1)
-np.save("Tracks", np_tracks)
+#np_tracks = np.asarray(track_all)
+#np_tracks = np.swapaxes(np_tracks,0,1)
+#np.save("Tracks", np_tracks)
