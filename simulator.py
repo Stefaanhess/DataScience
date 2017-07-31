@@ -37,9 +37,9 @@ class Agent:
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 20
-winWidth = 400
-winHeight = 400
+N = 30
+winWidth = 700
+winHeight = 700
 window = GraphWin("Window", winWidth, winHeight)
 
 # evaluation parameter
@@ -130,8 +130,10 @@ def update_agents():
         # Algo 3
         # vicek_next_step
     for ai in agents:
-        allow_border_crossing(ai)
-        track_t.append(np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), angle_between([1,0], ai.velo)]))
+        avoid_border_crossing(ai)
+        array = np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), ai.velo[0], ai.velo[1]])
+        bins = get_agents_in_sight(ai,agents,200)
+        track_t.append(np.concatenate([array,bins]))
         ai.velo = ai.velo_temp
         move_agent(ai)
     track_all.append(track_t)
@@ -158,14 +160,9 @@ def get_agents_in_sight(ai, agents, radius, num_bins = 36):
                 break
     return bins
 
-
-
-
-
-
-
 ### RUN IT
-plt.ion()
+# plt.ion()
+
 initialize()
 draw_agents()
 do_simulation()
