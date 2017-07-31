@@ -6,6 +6,17 @@ import tensorflow as tf
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
+### Variables of the algorithm
+
+min_track_length = 50
+track_smoothing_window_size = 15
+track_smoothing_std = .5
+num_discretization_bins = 12
+
+num_batches = 100
+num_hidden = 20
+batch_size = 10
+
 def splitChunks(t):
     """
     Small trick to increase the dataset size: A single track may have >500 detections, even after /15 reduction.
@@ -22,29 +33,22 @@ def split_all_tracks(np_array):
     """
     Splits all single tracks into multiple tracks via the splitChunks method
     """
-    list_tracks = np_array.ndarray.tolist()
-    print(array)
+    list_tracks = np_array.tolist()
     tracks = []
     for track in list_tracks:
         chunks = splitChunks(track)
         tracks = tracks + [chunks]
     return tracks
 
-### Variables of the algorithm
+np_tracks = np.load("Tracks_1.npy")
+tracks_1 = np.split(np.array(np_tracks),5,axis=1)
+tracks = np.concatenate(np.array(tracks_1))
 
-np_tracks = np.load("Tracks.npy")
-tracks = split_all_tracks(np_tracks) # optional, only if we want to split our tracks
-
-min_track_length = 50
-track_smoothing_window_size = 15
-track_smoothing_std = .5
-num_discretization_bins = 12
-
-num_batches = 100
-num_hidden = 12
-batch_size = 5
+# tracks = split_all_tracks(np_tracks) # optional, only if we want to split our tracks
 
 ### End of Variables of the algorithm 
+
+print(np.array(tracks).shape)
 
 # optional try to avoid tracks that are too short
 tracks = list(filter(lambda t: len(t) > min_track_length + track_smoothing_window_size + 1, tracks))
@@ -174,6 +178,7 @@ train_gen = data_generator(train_tracks)
 val_gen = data_generator(val_tracks)
 
 session = tf.Session()
+saver = tf.train.Saver()
 session.run(tf.global_variables_initializer())
 
 train_losses = []
@@ -193,6 +198,9 @@ for batch_idx in range(num_batches):
     sys.stdout.write('\r{}: train-logloss: {:.2f}, val-logloss: {:.2f}'.format(
         batch_idx, np.mean(train_losses[-100:]), np.mean(val_losses[-100:])))
 
+saver.save(session, 'my-model_1')
+
 plt.plot(pd.Series(train_losses).rolling(100).mean(), label='train-logloss')
 plt.plot(pd.Series(val_losses).rolling(100).mean(), label='val-logloss')
 plt.legend()
+plt.show()
