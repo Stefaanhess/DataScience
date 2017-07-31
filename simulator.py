@@ -34,18 +34,17 @@ class Agent:
         self.point.setFill(color)
 
     def appendTimestep(self, radius):
-        array = np.array([self.getX, self.getY(), self.velo[0], self.velo[1]])
+        array = np.array([self.getX(), self.getY(), self.velo[0], self.velo[1]])
         bins = get_agents_in_sight(self, agents, radius)
         wall_bins = get_walls_in_sight(self, radius=radius)
-        self.history.append(np.concatenate([array,bins, wall_bins]))
+        self.history.append(np.concatenate([array, bins, wall_bins]))
 
     def __str__(self):
         return "velo = " + self.velo.__str__()  + "; position = (" + self.point.getCenter().getX().__str__() + ", " + self.point.getCenter().getY().__str__() +")"
 
 ### GLOBAL PARAMETERS
-tracks = np.array([])
 agents = []
-N = 6
+N = 5
 winWidth = 700
 winHeight = 700
 window = GraphWin("Window", winWidth, winHeight)
@@ -84,6 +83,12 @@ def plot_graphs():
     axarr[1].plot(diviation_list)
     axarr[1].set_ylabel('Standard Deviation')
     plt.show()
+
+def digitize_track(track):
+    discretization_bins = np.load("Bins.npy")
+    for feature_i in range(4):
+        track[:, feature_i] = np.digitize(track[:, feature_i], discretization_bins[feature_i], right=True)
+    return track.astype(np.int32)
    
 ### SETTING UP THE WORLD    
 
@@ -125,13 +130,12 @@ def update_color(aj):
     t = np.array(t)*255
     aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
 
-with tf.Session() as sess: 
-    saver = tf.train.import_meta_graph('meta_graph_1')
-    saver.restore(sess, 'my-model_1')
 
-track_all = []
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
+sess = tf.Session()
+saver = tf.train.import_meta_graph('meta_graph_1')
+saver.restore(sess, 'my-model_1')
 def update_agents():
     for aj in agents:
         # Algo 1
@@ -143,15 +147,24 @@ def update_agents():
     for ai in agents:
         avoid_border_crossing(ai)
         ai.appendTimestep(200)
-        #train = np.expand_dims(np.array(ai.history[-50:]), axis=0)
-        #print(sess.run(['generator/gen_output:0'], feed_dict={'track_continuous': train,
-        #                                      'track_discrete': train}))
+        if (len(ai.history)>50):
+            track_continuous = np.expand_dims(np.array(ai.history[-50:]), axis=0)
+            track_discrete = np.expand_dims(digitize_track(np.array(ai.history[-50:])), axis=0)
+            print(track_continuous.shape)
+            print(track_discrete.shape)
+            #with tf.Session() as sess: 
+                
+            result = sess.run(['generator/gen_output:0'], feed_dict={'track_continuous:0': track_continuous, 'track_discrete:0': track_discrete})
+            print(np.asarray(result).shape)
+            print(result[0][-1])
+            print((result[0][-1]).shape)
+
         ai.velo = ai.velo_temp
         move_agent(ai)
 
 ### Simulation
 def do_simulation():
-    for i in range(1000):
+    for i in range(55):
         update_agents()
         evaluate_current_timestep()
     window.close()
@@ -194,6 +207,9 @@ initialize()
 draw_agents()
 do_simulation()
 
-#np_tracks = np.asarray(track_all)
-#np_tracks = np.swapaxes(np_tracks,0,1)
+#tracks = []
+#for agent in agents:
+#    tracks.append(agent.history)
+
+#np_tracks = np.asarray(tracks)
 #np.save("Tracks", np_tracks)

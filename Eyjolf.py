@@ -15,7 +15,7 @@ num_discretization_bins = 12
 
 num_batches = 100
 num_hidden = 20  # hochsetzen --> mächtigeres Modell
-batch_size = 10
+batch_size = 2
 
 def splitChunks(t):
     """
@@ -40,9 +40,9 @@ def split_all_tracks(np_array):
         tracks = tracks + [chunks]
     return tracks
 
-np_tracks = np.load("Tracks.npy")
-tracks_1 = np.split(np.array(np_tracks),5,axis=1)
-tracks = np.concatenate(np.array(tracks_1))
+tracks = np.load("Tracks.npy")
+#tracks_1 = np.split(np.array(np_tracks),5,axis=1)
+#tracks = np.concatenate(np.array(tracks_1))
 
 # tracks = split_all_tracks(np_tracks) # optional, only if we want to split our tracks
 
@@ -92,13 +92,14 @@ def get_equal_discretization_bins(data, bins):
 # Find out the bins
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
-for feature_i in range(num_features):
+for feature_i in range(4):
     discretization_bins.append(get_equal_discretization_bins(concatenated_tracks[:, feature_i], num_discretization_bins))
 del(concatenated_tracks)
+np.save("Bins",discretization_bins)
 
 # Digitize all values into the bins
 def digitize_track(track):
-    for feature_i in range(num_features):
+    for feature_i in range(4):
         track[:, feature_i] = np.digitize(track[:, feature_i], discretization_bins[feature_i], right=True)
     return track.astype(np.int32)
 
@@ -181,7 +182,7 @@ session = tf.Session()
 saver = tf.train.Saver()
 session.run(tf.global_variables_initializer())
 
-saver.restore(session, 'my-model_1')
+#saver.restore(session, 'my-model_1')
 
 
 train_losses = []
