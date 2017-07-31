@@ -14,7 +14,7 @@ track_smoothing_std = .5
 num_discretization_bins = 12
 
 num_batches = 100
-num_hidden = 20
+num_hidden = 20  # hochsetzen --> mächtigeres Modell
 batch_size = 10
 
 def splitChunks(t):
@@ -40,7 +40,7 @@ def split_all_tracks(np_array):
         tracks = tracks + [chunks]
     return tracks
 
-np_tracks = np.load("Tracks_1.npy")
+np_tracks = np.load("Tracks.npy")
 tracks_1 = np.split(np.array(np_tracks),5,axis=1)
 tracks = np.concatenate(np.array(tracks_1))
 
@@ -112,8 +112,8 @@ print(len(train_tracks), len(val_tracks))
 
 tf.reset_default_graph()
 
-track_continuous = tf.placeholder(tf.float32, shape=(None, min_track_length, num_features))
-track_discrete = tf.placeholder(tf.int32, shape=(None, min_track_length, num_features))
+track_continuous = tf.placeholder(tf.float32, shape=(None, min_track_length, num_features), name='track_continuous')
+track_discrete = tf.placeholder(tf.int32, shape=(None, min_track_length, num_features), name='track_discrete')
 
 inputs = track_continuous[:, :-1, :]
 targets = track_discrete[:, 1:, :]
@@ -147,7 +147,7 @@ with tf.variable_scope('generator'):
             tf.contrib.rnn.GRUCell(num_hidden), num_features * num_discretization_bins), 
         gen_hidden_0, dtype=tf.float32, scope='gen_features')
     gen_output = tf.reshape(gen_output,
-        (tf.shape(gen_output)[0], tf.shape(gen_output)[1], num_features, num_discretization_bins))
+        (tf.shape(gen_output)[0], tf.shape(gen_output)[1], num_features, num_discretization_bins), name='gen_output')
 
 # LOSS FUNCTION    
 loss = tf.reduce_mean(
@@ -181,8 +181,14 @@ session = tf.Session()
 saver = tf.train.Saver()
 session.run(tf.global_variables_initializer())
 
+saver.restore(session, 'my-model_1')
+
+
 train_losses = []
-val_losses = []
+val_losses = []#
+next1, next2 = next(train_gen)
+print(next1.shape)
+print(next2.shape)
 
 for batch_idx in range(num_batches):
     samples_continuous, samples_discrete = next(train_gen)
@@ -199,6 +205,7 @@ for batch_idx in range(num_batches):
         batch_idx, np.mean(train_losses[-100:]), np.mean(val_losses[-100:])))
 
 saver.save(session, 'my-model_1')
+tf.train.export_meta_graph('meta_graph_1')
 
 plt.plot(pd.Series(train_losses).rolling(100).mean(), label='train-logloss')
 plt.plot(pd.Series(val_losses).rolling(100).mean(), label='val-logloss')
