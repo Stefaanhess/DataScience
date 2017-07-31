@@ -8,7 +8,7 @@ Ro = 100
 Ra = 200
 max_turn = 90
 
-def couzin_next_step(aj, agents, norm):
+def couzin_next_step(aj, agents, norm, noise=2):
     """Asses the next step for a single agent according to the Couzin paper."""
     dist, pos_dif = calculate_distances(aj, agents) 
     if (neighbours_in_zoneR(dist)==True):
@@ -27,6 +27,7 @@ def couzin_next_step(aj, agents, norm):
         new_direct = np.zeros(2)
 
     aj.velo_temp = normalize(aj.velo + new_direct, norm)
+    aj.velo_temp = add_noise(aj.velo_temp, noise=noise)
     aj.velo_temp = set_angle(aj.velo, aj.velo_temp, norm, max_turn)
 
 

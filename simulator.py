@@ -37,7 +37,7 @@ class Agent:
 ### GLOBAL PARAMETERS
 tracks = np.array([])
 agents = []
-N = 30
+N = 1
 winWidth = 700
 winHeight = 700
 window = GraphWin("Window", winWidth, winHeight)
@@ -133,6 +133,9 @@ def update_agents():
         avoid_border_crossing(ai)
         array = np.array([ai.point.getCenter().getX(), ai.point.getCenter().getY(), ai.velo[0], ai.velo[1]])
         bins = get_agents_in_sight(ai,agents,200)
+        wall_bins = get_walls_in_sight(ai, radius=100)
+        #plt.bar(np.arange(len(wall_bins)), wall_bins)
+        #plt.show()
         track_t.append(np.concatenate([array,bins]))
         ai.velo = ai.velo_temp
         move_agent(ai)
@@ -159,6 +162,22 @@ def get_agents_in_sight(ai, agents, radius, num_bins = 36):
                 bins[i] = max([bins[i], (radius - np.linalg.norm(angle[1]))/radius])
                 break
     return bins
+
+def get_walls_in_sight(ai, radius, num_bins = 72, borders=[[0,0], [winWidth, winHeight]]):
+    """
+    """
+    walls = [[0, 0], borders]
+    walls_dirs = [[0, 1], [1, 0]]
+    bins = np.zeros(num_bins)
+    position = ai.getPos()
+    angles = np.linspace(-175, 175, num_bins, endpoint=True)
+    angles = np.radians(angles)
+    target_dirs = [normalize(turn_vector(ai.velo, angle), radius) for angle in angles]
+    for i, direction in enumerate(target_dirs):
+        intersection_point = get_wall_intersection(position, direction, borders)
+        bins[i] = max(0, 1 - np.linalg.norm(position-intersection_point)/radius)
+    return bins
+
 
 ### RUN IT
 # plt.ion()
