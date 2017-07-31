@@ -90,6 +90,16 @@ def get_equal_discretization_bins(data, bins):
     return ret_bins
 
 # Find out the bins
+
+###############################################
+# TOM:
+# ist eine liste mit den mean values in den bins:
+# wenn ich in bin[0] lande ist der mittelwert dort mean_bin_values[0]
+mean_bin_values = get_bin_means(ret_bins)
+###############################################
+
+
+
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
 for feature_i in range(4):

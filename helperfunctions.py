@@ -123,11 +123,17 @@ def get_wall_intersection(position, direction, borders):
     return intersection_point
 
 
+def get_bin_means(bin_borders):
+    if type(bin_borders) == list:
+        bin_borders = np.array(bin_borders)
+    if len(bin_borders) <= 1:
+        return False
+    diff = np.abs(bin_borders[1] - bin_borders[0])
+    bin_borders = np.array([border + diff/2 for border in bin_borders])
+    return bin_borders
+
+
+
 if __name__ == "__main__":
-    borders = [[0, 0], [100, 100]]
-    position = [80, 80]
-    directions = np.random.randint(-10, 10, size=(10, 2))
-    for direction in directions:
-        print('****')
-        print(position, direction)
-        print(get_wall_intersection(position, direction, borders))
+    bin_borders = np.arange(10)
+    print(get_bin_means(bin_borders))
