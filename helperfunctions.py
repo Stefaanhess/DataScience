@@ -1,4 +1,7 @@
 import numpy as np
+from matplotlib import pyplot as plt
+
+plt.ion()
 
 def find_nearest_neighbor(aj, agents): 
     """Nearest neighbor for agents."""
@@ -133,6 +136,12 @@ def get_bin_means(bin_borders):
     return bin_borders
 
 
+def plot_vision(others, wall, axarr):
+    x = np.arange(len(others))
+    ax1, ax2 = axarr
+    ax1.bar(x, others)
+    ax2.bar(x, wall)
+    #plt.draw()
 
 if __name__ == "__main__":
     bin_borders = np.arange(10)
