@@ -13,7 +13,7 @@ track_smoothing_window_size = 15
 track_smoothing_std = .5
 num_discretization_bins = 72
 
-num_batches = 50
+num_batches = 100
 num_hidden = 100  # hochsetzen --> mächtigeres Modell
 batch_size = 12
 
@@ -40,7 +40,7 @@ def split_all_tracks(np_array):
         tracks = tracks + [chunks]
     return tracks
 
-tracks = np.load("Tracks.npy")
+tracks = np.load("Tracks2.npy")
 #tracks_1 = np.split(np.array(np_tracks),5,axis=1)
 #tracks = np.concatenate(np.array(tracks_1))
 
@@ -112,8 +112,10 @@ tf.reset_default_graph()
 track_continuous = tf.placeholder(tf.float32, shape=(None, min_track_length, num_features), name='track_continuous')
 track_discrete = tf.placeholder(tf.int32, shape=(None, min_track_length, num_features), name='track_discrete')
 
+num_outputs = 2
+
 inputs = track_continuous[:, :-1, :]
-targets = track_discrete[:, 1:, :]
+targets = track_discrete[:, 1:, :num_outputs]
 
 with tf.variable_scope('discriminator'):
     disc_hidden_0, _ = tf.nn.dynamic_rnn(
@@ -141,17 +143,17 @@ with tf.variable_scope('generator'):
         gen_hidden_0_input, dtype=tf.float32, scope='gen_hidden_0')
     gen_output, _ = tf.nn.dynamic_rnn(
         tf.contrib.rnn.OutputProjectionWrapper(
-            tf.contrib.rnn.GRUCell(num_hidden), num_features * num_discretization_bins), 
+            tf.contrib.rnn.GRUCell(num_hidden), num_outputs * num_discretization_bins), 
         gen_hidden_0, dtype=tf.float32, scope='gen_features')
     gen_output = tf.reshape(gen_output,
-        (tf.shape(gen_output)[0], tf.shape(gen_output)[1], num_features, num_discretization_bins), name='gen_output')
+        (tf.shape(gen_output)[0], tf.shape(gen_output)[1], num_outputs, num_discretization_bins), name='gen_output')
 
 # LOSS FUNCTION    
 loss = tf.reduce_mean(
     tf.nn.sparse_softmax_cross_entropy_with_logits(
         labels=targets, logits=gen_output))
 
-optimizer = tf.train.AdamOptimizer(0.01)
+optimizer = tf.train.AdamOptimizer(0.001)
 
 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 with tf.control_dependencies(update_ops):
