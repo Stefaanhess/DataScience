@@ -132,7 +132,9 @@ def get_bin_means(bin_borders):
     if len(bin_borders) <= 1:
         return False
     diff = np.abs(bin_borders[1] - bin_borders[0])
-    bin_borders = np.array([border + diff/2 for border in bin_borders])
+
+    bin_borders = np.array([border - diff/2 for border in bin_borders])
+    bin_borders = np.append(bin_borders, bin_borders[-1] + diff)
     return bin_borders
 
 
