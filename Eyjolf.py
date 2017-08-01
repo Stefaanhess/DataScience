@@ -13,7 +13,7 @@ track_smoothing_window_size = 15
 track_smoothing_std = .5
 num_discretization_bins = 72
 
-num_batches = 100
+num_batches = 50
 num_hidden = 100  # hochsetzen --> mächtigeres Modell
 batch_size = 12
 
@@ -176,8 +176,6 @@ val_gen = data_generator(val_tracks)
 session = tf.Session()
 saver = tf.train.Saver()
 session.run(tf.global_variables_initializer())
-
-#saver.restore(session, 'my-model_1')
 
 train_losses = []
 val_losses = []
