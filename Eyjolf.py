@@ -55,10 +55,6 @@ tracks = list(filter(lambda t: len(t) > min_track_length + track_smoothing_windo
 tracks = list(map(np.array, tracks))
 num_features = tracks[0].shape[-1]
 
-plt.scatter(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]))
-plt.plot(np.cumsum(tracks[0][:, 0]), np.cumsum(tracks[0][:, 1]), '--')
-plt.show()
-
 # not used at the moment
 def get_discretization_bins(data, bins):
     """
@@ -185,12 +181,8 @@ session.run(tf.global_variables_initializer())
 
 #saver.restore(session, 'my-model_1')
 
-
 train_losses = []
-val_losses = []#
-next1, next2 = next(train_gen)
-print(next1.shape)
-print(next2.shape)
+val_losses = []
 
 for batch_idx in range(num_batches):
     samples_continuous, samples_discrete = next(train_gen)

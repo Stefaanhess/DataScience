@@ -11,6 +11,15 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
+### GLOBAL PARAMETERS
+
+save_data = False
+T = 200
+N = 30
+winWidth = 700
+winHeight = 700
+vision_radius = 200
+
 ### CLASS AGENT
 
 class Agent:
@@ -44,17 +53,12 @@ class Agent:
 
 ### GLOBAL PARAMETERS
 agents = []
-N = 5
-winWidth = 700
-winHeight = 700
 window = GraphWin("Window", winWidth, winHeight)
+norm = 5
 
 # evaluation parameter
 mean_dist_list = []
 diviation_list = []
-
-# global parameter for all agents, all radius and speed
-norm = 5
 
 ### Evaluation Functions
 
@@ -94,7 +98,7 @@ def digitize_track(track):
 
 def initialize():
     for i in range(N):
-        agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm),'red'))
+        agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm),'blue'))
 
 # draw the agents into the window to display them
 def draw_agents():
@@ -124,18 +128,20 @@ def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
 # TODO update color according to error in prediction
-def update_color(aj):
-    # c = angle_error() # needs real value and estimated one!
+def update_color(aj, c):
+    c = 1-c
     t = colorsys.hsv_to_rgb((c*0.33),0.8,0.8)
     t = np.array(t)*255
     aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
 
-
 # first loop: calculate all new velos with old velos
 # second loop: set value old velo to new velo and move agents
-sess = tf.Session()
-saver = tf.train.import_meta_graph('meta_graph_1')
-saver.restore(sess, 'my-model_1')
+
+if(save_data==False):
+    sess = tf.Session()
+    saver = tf.train.import_meta_graph('meta_graph_1')
+    saver.restore(sess, 'my-model_1')
+
 def update_agents():
     for aj in agents:
         # Algo 1
@@ -146,25 +152,29 @@ def update_agents():
         # vicek_next_step
     for ai in agents:
         avoid_border_crossing(ai)
-        ai.appendTimestep(200)
-        if (len(ai.history)>50):
-            track_continuous = np.expand_dims(np.array(ai.history[-50:]), axis=0)
-            track_discrete = np.expand_dims(digitize_track(np.array(ai.history[-50:])), axis=0)
-            print(track_continuous.shape)
-            print(track_discrete.shape)
-            #with tf.Session() as sess: 
-                
-            result = sess.run(['generator/gen_output:0'], feed_dict={'track_continuous:0': track_continuous, 'track_discrete:0': track_discrete})
-            print(np.asarray(result).shape)
-            print(result[0][-1])
-            print((result[0][-1]).shape)
+        ai.appendTimestep(vision_radius)
+
+        if (save_data == False):
+            if (len(ai.history)>50):
+                track_continuous = np.expand_dims(np.array(ai.history[-50:]), axis=0)
+                track_discrete = np.expand_dims(digitize_track(np.array(ai.history[-50:])), axis=0)
+                #with tf.Session() as sess: 
+                    
+                result = sess.run(['generator/gen_output:0'], feed_dict={'track_continuous:0': track_continuous, 'track_discrete:0': track_discrete})
+                discretization_bins = np.load("Bins.npy")
+                bin_array_x = get_bin_means(discretization_bins[2])
+                bin_array_y = get_bin_means(discretization_bins[3])
+                x_dir = np.argmax(result[0][0][-1][2])
+                y_dir = np.argmax(result[0][0][-1][3])
+                predicted_velo = np.array([bin_array_x[x_dir-1],bin_array_y[y_dir-1]])
+                update_color(ai, angle_error(ai.velo_temp,predicted_velo))
 
         ai.velo = ai.velo_temp
         move_agent(ai)
 
 ### Simulation
 def do_simulation():
-    for i in range(55):
+    for i in range(T):
         update_agents()
         evaluate_current_timestep()
     window.close()
@@ -199,7 +209,6 @@ def get_walls_in_sight(ai, radius, num_bins = 72, borders=[[0,0], [winWidth, win
         bins[i] = max(0, 1 - np.linalg.norm(position-intersection_point)/radius)
     return bins
 
-
 ### RUN IT
 # plt.ion()
 
@@ -207,9 +216,10 @@ initialize()
 draw_agents()
 do_simulation()
 
-#tracks = []
-#for agent in agents:
-#    tracks.append(agent.history)
+if(save_data == True):
+    tracks = []
+    for agent in agents:
+        tracks.append(agent.history)
 
-#np_tracks = np.asarray(tracks)
-#np.save("Tracks", np_tracks)
+    np_tracks = np.asarray(tracks)
+    np.save("Tracks", np_tracks)

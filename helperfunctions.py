@@ -89,9 +89,9 @@ def angle_error(simulated, predicted, max_difference = 90):
     """
     angle_difference = angle_between(simulated, predicted)
     if np.abs(angle_difference) >= max_difference:
-        (1, 0, 0)
+        return 1 
     rel_diff = np.abs(angle_difference/max_difference)
-    return (rel_diff, 1-rel_diff, 0)
+    return rel_diff
 
 def turn_vector(vec, angle):
     x, y = vec
