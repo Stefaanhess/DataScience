@@ -43,7 +43,7 @@ class Agent:
         self.point.setFill(color)
 
     def appendTimestep(self, radius):
-        array = np.array([self.getX(), self.getY(), self.velo[0], self.velo[1]])
+        array = np.array([self.velo[0], self.velo[1]])
         bins = get_agents_in_sight(self, agents, radius)
         wall_bins = get_walls_in_sight(self, radius=radius)
         self.history.append(np.concatenate([array, bins, wall_bins]))
@@ -90,7 +90,7 @@ def plot_graphs():
 
 def digitize_track(track):
     discretization_bins = np.load("Bins.npy")
-    for feature_i in range(4):
+    for feature_i in range(2):
         track[:, feature_i] = np.digitize(track[:, feature_i], discretization_bins[feature_i], right=True)
     return track.astype(np.int32)
    
@@ -162,10 +162,10 @@ def update_agents():
                     
                 result = sess.run(['generator/gen_output:0'], feed_dict={'track_continuous:0': track_continuous, 'track_discrete:0': track_discrete})
                 discretization_bins = np.load("Bins.npy")
-                bin_array_x = get_bin_means(discretization_bins[2])
-                bin_array_y = get_bin_means(discretization_bins[3])
-                x_dir = np.argmax(result[0][0][-1][2])
-                y_dir = np.argmax(result[0][0][-1][3])
+                bin_array_x = get_bin_means(discretization_bins[0])
+                bin_array_y = get_bin_means(discretization_bins[1])
+                x_dir = np.argmax(result[0][0][-1][0])
+                y_dir = np.argmax(result[0][0][-1][1])
                 predicted_velo = np.array([bin_array_x[x_dir-1],bin_array_y[y_dir-1]])
                 update_color(ai, angle_error(ai.velo_temp,predicted_velo))
 

@@ -11,11 +11,11 @@ import matplotlib.pyplot as plt
 min_track_length = 50
 track_smoothing_window_size = 15
 track_smoothing_std = .5
-num_discretization_bins = 12
+num_discretization_bins = 72
 
 num_batches = 100
-num_hidden = 20  # hochsetzen --> mächtigeres Modell
-batch_size = 2
+num_hidden = 100  # hochsetzen --> mächtigeres Modell
+batch_size = 12
 
 def splitChunks(t):
     """
@@ -89,17 +89,16 @@ def get_equal_discretization_bins(data, bins):
 
 discretization_bins = []
 concatenated_tracks = np.concatenate(tracks)
-for feature_i in range(4):
+for feature_i in range(2):
     discretization_bins.append(get_equal_discretization_bins(concatenated_tracks[:, feature_i], num_discretization_bins))
 del(concatenated_tracks)
 np.save("Bins",discretization_bins)
 
 # Digitize all values into the bins
 def digitize_track(track):
-    for feature_i in range(4):
+    for feature_i in range(2):
         track[:, feature_i] = np.digitize(track[:, feature_i], discretization_bins[feature_i], right=True)
     return track.astype(np.int32)
-
 
 ### MODEL SET UP BEGINS
 
@@ -152,7 +151,6 @@ loss = tf.reduce_mean(
     tf.nn.sparse_softmax_cross_entropy_with_logits(
         labels=targets, logits=gen_output))
 
-# 
 optimizer = tf.train.AdamOptimizer(0.01)
 
 update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
