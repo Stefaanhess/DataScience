@@ -13,14 +13,15 @@ import matplotlib.pyplot as plt
 
 ### GLOBAL PARAMETERS
 
-save_data = True
-num_simulations = 3
-T = 20
-N = 30
+save_data = False
+predict_all = True
+num_simulations = 2
+T = 60
+N = 5
 winWidth = 700
 winHeight = 700
-vision_radius = 200
-draw = False
+vision_radius = 80
+draw = True
 
 ### CLASS AGENT
 
@@ -168,12 +169,17 @@ def update_agents():
                 discretization_bins = np.load("Bins.npy")
                 bin_array_x = get_bin_means(discretization_bins[0])
                 bin_array_y = get_bin_means(discretization_bins[1])
+                print(result[0][0][-1][0])
                 x_dir = np.argmax(result[0][0][-1][0])
+                print(x_dir)
                 y_dir = np.argmax(result[0][0][-1][1])
-                predicted_velo = np.array([bin_array_x[x_dir-1],bin_array_y[y_dir-1]])
-                update_color(ai, angle_error(ai.velo_temp,predicted_velo))
-
+                predicted_velo = np.array([bin_array_x[x_dir],bin_array_y[y_dir]])
+ #               update_color(ai, angle_error(ai.velo_temp,predicted_velo))
         ai.velo = ai.velo_temp
+        
+        if (predict_all == True and len(ai.history)>50):
+            ai.velo = predicted_velo
+            
         move_agent(ai)
 
 ### Simulation
@@ -227,5 +233,7 @@ for i in range(num_simulations):
         for agent in agents:
             tracks.append(agent.history)
 
-np_tracks = np.asarray(tracks)
-np.save("Tracks", np_tracks)
+if(save_data == True):
+    np_tracks = np.asarray(tracks)
+    print(np_tracks.shape)
+    np.save("Tracks", np_tracks)
