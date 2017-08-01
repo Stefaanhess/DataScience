@@ -13,12 +13,14 @@ import matplotlib.pyplot as plt
 
 ### GLOBAL PARAMETERS
 
-save_data = False
-T = 200
+save_data = True
+num_simulations = 3
+T = 20
 N = 30
 winWidth = 700
 winHeight = 700
 vision_radius = 200
+draw = False
 
 ### CLASS AGENT
 
@@ -53,7 +55,8 @@ class Agent:
 
 ### GLOBAL PARAMETERS
 agents = []
-window = GraphWin("Window", winWidth, winHeight)
+if draw:
+    window = GraphWin("Window", winWidth, winHeight)
 norm = 5
 
 # evaluation parameter
@@ -97,6 +100,8 @@ def digitize_track(track):
 ### SETTING UP THE WORLD    
 
 def initialize():
+    global agents
+    agents = []
     for i in range(N):
         agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm),'blue'))
 
@@ -153,7 +158,6 @@ def update_agents():
     for ai in agents:
         avoid_border_crossing(ai)
         ai.appendTimestep(vision_radius)
-
         if (save_data == False):
             if (len(ai.history)>50):
                 track_continuous = np.expand_dims(np.array(ai.history[-50:]), axis=0)
@@ -173,11 +177,12 @@ def update_agents():
         move_agent(ai)
 
 ### Simulation
-def do_simulation():
+def do_simulation(T):
     for i in range(T):
+        print("Timesteps: ", i)
         update_agents()
-        evaluate_current_timestep()
-    window.close()
+    if draw:
+        window.close()
 
 def get_agents_in_sight(ai, agents, radius, num_bins = 36):
     """
@@ -211,15 +216,16 @@ def get_walls_in_sight(ai, radius, num_bins = 72, borders=[[0,0], [winWidth, win
 
 ### RUN IT
 # plt.ion()
+tracks = []
+for i in range(num_simulations):
+    print("Simulation: ", i)
+    initialize()
+    if draw:
+        draw_agents()
+    do_simulation(T)
+    if(save_data == True):
+        for agent in agents:
+            tracks.append(agent.history)
 
-initialize()
-draw_agents()
-do_simulation()
-
-if(save_data == True):
-    tracks = []
-    for agent in agents:
-        tracks.append(agent.history)
-
-    np_tracks = np.asarray(tracks)
-    np.save("Tracks", np_tracks)
+np_tracks = np.asarray(tracks)
+np.save("Tracks", np_tracks)
