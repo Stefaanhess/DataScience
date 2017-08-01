@@ -15,12 +15,12 @@ import matplotlib.pyplot as plt
 
 save_data = False
 predict_all = True
-num_simulations = 2
-T = 60
-N = 5
+num_simulations = 1
+T = 200
+N = 30
 winWidth = 700
 winHeight = 700
-vision_radius = 80
+vision_radius = 200
 draw = True
 
 ### CLASS AGENT
@@ -148,6 +148,8 @@ if(save_data==False):
     saver = tf.train.import_meta_graph('meta_graph_1')
     saver.restore(sess, 'my-model_1')
 
+from scipy.special import expit
+
 def update_agents():
     for aj in agents:
         # Algo 1
@@ -169,11 +171,12 @@ def update_agents():
                 discretization_bins = np.load("Bins.npy")
                 bin_array_x = get_bin_means(discretization_bins[0])
                 bin_array_y = get_bin_means(discretization_bins[1])
-                print(result[0][0][-1][0])
+        
                 x_dir = np.argmax(result[0][0][-1][0])
-                print(x_dir)
+                print("x: ", ["{:.2f}".format(val) for val in expit(result[0][0][-1][0])])
                 y_dir = np.argmax(result[0][0][-1][1])
-                predicted_velo = np.array([bin_array_x[x_dir],bin_array_y[y_dir]])
+                print("y: ",y_dir)
+                predicted_velo = np.array([bin_array_x[x_dir-1],bin_array_y[y_dir-1]])
  #               update_color(ai, angle_error(ai.velo_temp,predicted_velo))
         ai.velo = ai.velo_temp
         
@@ -181,6 +184,10 @@ def update_agents():
             ai.velo = predicted_velo
             
         move_agent(ai)
+
+## Bins Function von Ben
+## ableitung von X & Y velo
+## Wirklich Wahrscheinlichkeitsverteilung?
 
 ### Simulation
 def do_simulation(T):
