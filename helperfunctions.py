@@ -184,6 +184,12 @@ def update_color(aj, c):
     t = np.array(t)*255
     aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
 
+
+def merge_data_sets(files):
+    arrays = [np.load(file) for file in files]
+    arrays = tuple(arrays)
+    merged_array = np.concatenate(arrays)
+    np.save("merged_tracks", merged_array)
+
 if __name__ == "__main__":
-    bin_borders = np.arange(10)
-    print(get_bin_means(bin_borders))
+    merge_data_sets(["Tracks.npy", "Tracks2.npy"])
