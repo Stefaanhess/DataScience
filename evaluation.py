@@ -50,6 +50,39 @@ def getCluster(agents):
 #        agents[i].setColor(color_rgb(rgb[0], rgb[1], rgb[2]))
 #    print(colors)
 
+def cluster_density(positions):
+    mean = np.mean(positions)
+    max_dist = max([np.linalg.norm(mean - position) for position in positions])
+    area = np.pi * max_dist**2
+    density = len(positions) / area
+    return density
+
+def average_cluster_density(clusters):
+    av_density = 0
+    sum_cluster_size = 0
+    for cluster in clusters:
+        cluster_density = cluster_density(cluster)
+        cluster_size = len(cluster)
+        sum_cluster_size += cluster_size
+        av_density += cluster_density * cluster_size
+    av_density /= sum_cluster_size
+    return av_density
+
+def cluster_plot(data, axarr):
+    time, av_cluster_densities, not_clustered = data
+    ax1, ax2 = axarr
+    ax1.plot(time, av_cluster_densities)
+    ax2.plot(time, not_clustered)
+    plt.show()
+
+
+
+
+
+
+
+
+
 if __name__=='__main__':
     a = np.array([False, True, False, True])
     b = np.array([[1, 1], [2, 2], [3, 3], [4, 4]])
