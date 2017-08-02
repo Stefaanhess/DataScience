@@ -1,6 +1,13 @@
 .DS_Store
+*.npy
+*.meta
+*.index
+meta*
+my-model*
 
+*.xml
 .idea/workspace.xml
+
 *.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
