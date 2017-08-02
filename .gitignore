@@ -4,7 +4,7 @@
 *.index
 meta*
 my-model*
-
+.idea/
 *.xml
 .idea/workspace.xml
 
