@@ -176,7 +176,7 @@ def update_agents():
                 print("x: ", ["{:.2f}".format(val) for val in expit(result[0][0][-1][0])])
                 y_dir = np.argmax(result[0][0][-1][1])
                 print("y: ",y_dir)
-                predicted_velo = np.array([bin_array_x[x_dir-1],bin_array_y[y_dir-1]])
+                predicted_velo = np.array([bin_array_x[x_dir],bin_array_y[y_dir]])
  #               update_color(ai, angle_error(ai.velo_temp,predicted_velo))
         ai.velo = ai.velo_temp
         

@@ -15,7 +15,7 @@ num_discretization_bins = 72
 
 num_batches = 100
 num_hidden = 100  # hochsetzen --> mächtigeres Modell
-batch_size = 12
+batch_size = 6
 
 def splitChunks(t):
     """
@@ -40,7 +40,7 @@ def split_all_tracks(np_array):
         tracks = tracks + [chunks]
     return tracks
 
-tracks = np.load("Tracks2.npy")
+tracks = np.load("Tracks.npy")
 #tracks_1 = np.split(np.array(np_tracks),5,axis=1)
 #tracks = np.concatenate(np.array(tracks_1))
 
