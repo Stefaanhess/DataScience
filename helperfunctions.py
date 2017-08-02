@@ -145,6 +145,45 @@ def plot_vision(others, wall, axarr):
     ax2.bar(x, wall)
     #plt.draw()
 
+
+def get_agents_in_sight(ai, agents, radius, num_bins = 36):
+    """
+    Seperate environment of an agent into bins and find nearest neighbour for all bins.
+    """
+    bins = np.zeros(num_bins)
+    borders = np.linspace(-180, 180, num_bins + 1)
+    directions = [agent.getPos()-ai.getPos() for agent in agents if 0 < np.linalg.norm(agent.getPos()-ai.getPos()) <= radius]
+    angles = [[angle_between(ai.velo, direction), direction] for direction in directions]
+    for angle in angles:
+        for i in range(len(borders)-1):
+            if angle[0] <= borders[i+1]:
+                bins[i] = max([bins[i], (radius - np.linalg.norm(angle[1]))/radius])
+                break
+    return bins
+
+def get_walls_in_sight(ai, radius, num_bins = 72, borders=[[0,0], [700, 700]]):
+    """
+    Ray tracing in order to detect walls.
+    """
+    walls = [[0, 0], borders]
+    walls_dirs = [[0, 1], [1, 0]]
+    bins = np.zeros(num_bins)
+    position = ai.getPos()
+    angles = np.linspace(-175, 175, num_bins, endpoint=True)
+    angles = np.radians(angles)
+    target_dirs = [normalize(turn_vector(ai.velo, angle), radius) for angle in angles]
+    for i, direction in enumerate(target_dirs):
+        intersection_point = get_wall_intersection(position, direction, borders)
+        bins[i] = max(0, 1 - np.linalg.norm(position-intersection_point)/radius)
+    return bins
+
+# TODO update color according to error in prediction
+def update_color(aj, c):
+    c = 1-c
+    t = colorsys.hsv_to_rgb((c*0.33),0.8,0.8)
+    t = np.array(t)*255
+    aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
+
 if __name__ == "__main__":
     bin_borders = np.arange(10)
     print(get_bin_means(bin_borders))
