@@ -184,6 +184,14 @@ def update_color(aj, c):
     t = np.array(t)*255
     aj.setColor(color_rgb(int(t[0]),int(t[1]),int(t[2])))
 
+
+def get_spaced_colors(n):
+    """Get n distinct RGB values"""
+    max_value = 16581375 #255**3
+    interval = int(max_value / n)
+    colors = [hex(I)[2:].zfill(6) for I in range(0, max_value, interval)]
+    return [(int(i[:2], 16), int(i[2:4], 16), int(i[4:], 16)) for i in colors]
+
 if __name__ == "__main__":
     bin_borders = np.arange(10)
     print(get_bin_means(bin_borders))

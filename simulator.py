@@ -6,6 +6,7 @@ from simple_model import assimilate_velo
 from vicsek import vicek_next_step
 from tempfile import TemporaryFile
 from network_model import *
+from evaluation import *
 
 import colorsys
 import tensorflow as tf
@@ -15,7 +16,7 @@ import matplotlib.pyplot as plt
 
 ### GLOBAL PARAMETERS
 
-T = 55
+T = 100000
 N = 30
 winWidth = 700
 winHeight = 700
@@ -93,28 +94,36 @@ def allow_border_crossing(aj):
 def move_agent(aj):
     aj.point.move(aj.velo[0],aj.velo[1])
 
+means = []
+stds = []
+
 def update_agents():
     for aj in agents:
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
         # Algo 2
-        #couzin_next_step(aj, agents, norm)
+        couzin_next_step(aj, agents, norm)
         # Algo 3
         # vicek_next_step
         # Algo 4
-        run_network(aj, agents, norm)
+        #run_network(aj, agents, norm)
     for ai in agents:
         avoid_border_crossing(ai)
         ai.appendTimestep(vision_radius)
         ai.velo = ai.velo_temp        
         move_agent(ai)
+    mean, std = evaluate_current_timestep(agents)
+    means.append(mean)
+    stds.append(std)
 
+
+    print(getCluster(agents))
 
 ### Simulation
 def do_simulation(num_agents, num_timesteps, draw_active):
     if draw_active:
         window = GraphWin("Window", winWidth, winHeight)
-        initialize(draw_active, window)
+        initialize(num_agents, draw_active, window)
     else:
         initialize(num_agents, draw_active, None)
     for i in range(num_timesteps):
@@ -129,4 +138,5 @@ def do_simulation(num_agents, num_timesteps, draw_active):
 
 if __name__=='__main__':
     do_simulation(N, T, True)
+    plot_graphs(means, stds)
 
