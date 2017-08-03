@@ -137,13 +137,20 @@ def get_bin_means(bin_borders):
     bin_borders = np.append(bin_borders, bin_borders[-1] + diff)
     return bin_borders
 
-
+plt.ion()
 def plot_vision(others, wall, axarr):
     x = np.arange(len(others))
     ax1, ax2 = axarr
     ax1.bar(x, others)
     ax2.bar(x, wall)
-    #plt.draw()
+    plt.draw()
+
+def vision_of_agent(agents, radius, num_bins=36):
+    agent_id = 0
+    ai = agents[agent_id]
+    other_agents = get_agents_in_sight(ai, agents, radius, num_bins)
+    walls = get_walls_in_sight(ai, radius, num_bins)
+    return other_agents, walls
 
 
 def get_agents_in_sight(ai, agents, radius, num_bins = 36):
@@ -153,7 +160,7 @@ def get_agents_in_sight(ai, agents, radius, num_bins = 36):
     bins = np.zeros(num_bins)
     borders = np.linspace(-180, 180, num_bins + 1)
     directions = [agent.getPos()-ai.getPos() for agent in agents if 0 < np.linalg.norm(agent.getPos()-ai.getPos()) <= radius]
-    angles = [[angle_between(ai.velo, direction), direction] for direction in directions]
+    angles = [[angle_between([1, 0], direction), direction] for direction in directions]
     for angle in angles:
         for i in range(len(borders)-1):
             if angle[0] <= borders[i+1]:
@@ -171,7 +178,7 @@ def get_walls_in_sight(ai, radius, num_bins = 36, borders=[[0,0], [700, 700]]):
     position = ai.getPos()
     angles = np.linspace(-175, 175, num_bins, endpoint=True)
     angles = np.radians(angles)
-    target_dirs = [normalize(turn_vector(ai.velo, angle), radius) for angle in angles]
+    target_dirs = [normalize(turn_vector([1, 0], angle), radius) for angle in angles]
     for i, direction in enumerate(target_dirs):
         intersection_point = get_wall_intersection(position, direction, borders)
         bins[i] = max(0, 1 - np.linalg.norm(position-intersection_point)/radius)
@@ -199,4 +206,15 @@ def get_spaced_colors(n):
     return [(int(i[:2], 16), int(i[2:4], 16), int(i[4:], 16)) for i in colors]
 
 if __name__ == "__main__":
-    merge_data_sets(["Tracks.npy", "Tracks2.npy"])
+    #merge_data_sets(["Tracks.npy", "Tracks2.npy"])
+    plt.ion()
+    f, axarr = plt.subplots(2)
+    ax1, ax2 = axarr
+    for i in range(100):
+        x = range(i)
+        y = range(i)
+        # plt.gca().cla() # optionally clear axes
+        ax1.plot(x, y)
+        ax2.plot(x, y)
+        plt.draw()
+        plt.pause(0.1)

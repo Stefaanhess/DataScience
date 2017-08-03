@@ -16,12 +16,14 @@ import matplotlib.pyplot as plt
 
 ### GLOBAL PARAMETERS
 
-T = 100
+T = 500
 N = 30
 winWidth = 700
 winHeight = 700
-vision_radius = 80
+vision_radius = 100
+vision_bins = 36
 position_history = []
+velocity_history = []
 ### CLASS AGENT
 
 class Agent:
@@ -44,10 +46,10 @@ class Agent:
     def setColor(self,color):
         self.point.setFill(color)
 
-    def appendTimestep(self, radius):
+    def appendTimestep(self, radius, vision_bins):
         array = np.array([self.velo[0], self.velo[1]])
-        bins = get_agents_in_sight(self, agents, radius)
-        wall_bins = get_walls_in_sight(self, radius, 72, [[0,0], [winWidth, winHeight]] )
+        bins = get_agents_in_sight(self, agents, radius, vision_bins)
+        wall_bins = get_walls_in_sight(self, radius, vision_bins, [[0,0], [winWidth, winHeight]] )
         self.history.append(np.concatenate([array, bins, wall_bins]))
 
     def __str__(self):
@@ -55,7 +57,7 @@ class Agent:
 
 ### GLOBAL PARAMETERS
 agents = []
-norm = 5
+norm = 3
    
 ### SETTING UP THE WORLD    
 
@@ -102,24 +104,20 @@ def update_agents():
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
         # Algo 2
-        couzin_next_step(aj, agents, norm)
+        #couzin_next_step(aj, agents, norm)
         # Algo 3
         # vicek_next_step
         # Algo 4
-        #run_network(aj, agents, norm)
+        run_network(aj, agents, norm)
     for ai in agents:
         avoid_border_crossing(ai)
-        ai.appendTimestep(vision_radius)
+        ai.appendTimestep(vision_radius, vision_bins)
         ai.velo = ai.velo_temp        
         move_agent(ai)
-    mean, std = evaluate_current_timestep(agents)
-    means.append(mean)
-    stds.append(std)
-
 
 
 ### Simulation
-def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False):
+def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False, show_vision=False):
     if draw_active:
         window = GraphWin("Window", winWidth, winHeight, autoflush=False)
         initialize(num_agents, draw_active, window)
@@ -128,21 +126,36 @@ def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False):
     for i in range(num_timesteps):
         print("Timesteps: ", i)
         update_agents()
-        window.update()
+        if draw_active:
+            window.update()
         if save_positions:
             positions = [agent.getPos() for agent in agents]
+            velocities = [agent.velo for agent in agents]
             position_history.append(positions)
+            velocity_history.append(velocities)
+        if show_vision:
+            agents[0].setColor('red')
+            others, wall = vision_of_agent(agents, 200, vision_bins)
+            x = np.arange(len(others))
+            ax1.cla()
+            ax2.cla()
+            ax1.bar(x, others)
+            ax2.bar(x, wall)
+            plt.draw()
     if draw_active:
         window.close()
     if save_positions:
-        np.save("Evaluation/rnn_positions", position_history)
-    np.save("history_check", agents[0].history)
+        np.save("evaluation/rnn_positions", position_history)
+        np.save("evaluation/rnn_velocities", velocity_history)
     return agents
 
 ### RUN IT
 # plt.ion()
 
 if __name__=='__main__':
-    do_simulation(N, 250, True, False)
+    #plt.ion()
+    #f, axarr = plt.subplots(2, sharex=True)
+    #ax1, ax2 = axarr
+    do_simulation(N, T, True, True, False)
     #plot_graphs(means, stds)
 

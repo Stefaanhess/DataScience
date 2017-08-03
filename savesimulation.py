@@ -1,7 +1,7 @@
 from simulator import *
 
-num_simulations = 160
-T = 600
+num_simulations = 10
+T = 200
 N = 30
 
 tracks = []
