@@ -161,7 +161,7 @@ def get_agents_in_sight(ai, agents, radius, num_bins = 36):
                 break
     return bins
 
-def get_walls_in_sight(ai, radius, num_bins = 72, borders=[[0,0], [700, 700]]):
+def get_walls_in_sight(ai, radius, num_bins = 36, borders=[[0,0], [700, 700]]):
     """
     Ray tracing in order to detect walls.
     """

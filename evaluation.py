@@ -27,9 +27,9 @@ def plot_graphs(mean_dist_list, diviation_list):
     axarr[1].set_ylabel('Standard Deviation')
     plt.savefig('evaluation')
 
-def getCluster(agents):
-    positions = np.array([ai.getPos() for ai in agents])
-    cluster = DBSCAN(eps=40, min_samples=3).fit(positions)
+def getCluster(positions, clustersize=3):
+    #positions = np.array([ai.getPos() for ai in agents])
+    cluster = DBSCAN(eps=40, min_samples=clustersize).fit(positions)
     labels = cluster.labels_
     clusters = []
     no_cluster = []
@@ -68,11 +68,16 @@ def average_cluster_density(clusters):
     av_density /= sum_cluster_size
     return av_density
 
-def cluster_plot(data, axarr):
-    time, av_cluster_densities, not_clustered = data
+def cluster_plot(data):
+    f, axarr = plt.subplots(2, sharex=True)
+    time, n_clusters, not_clustered = data
     ax1, ax2 = axarr
-    ax1.plot(time, av_cluster_densities)
+    ax1.set_title('number of clusters')
+    ax1.plot(time, n_clusters, label='clusters >= 2')
+    ax2.set_title('particles not clustered')
     ax2.plot(time, not_clustered)
+    ax2.set_xlabel("timesteps")
+    plt.savefig("figures/rnn_clusters.pdf")
     plt.show()
 
 
@@ -84,8 +89,18 @@ def cluster_plot(data, axarr):
 
 
 if __name__=='__main__':
-    a = np.array([False, True, False, True])
-    b = np.array([[1, 1], [2, 2], [3, 3], [4, 4]])
-    print(b[a])
+    position_history = np.load("Evaluation/rnn_positions.npy")
+    timestep = []
+    n_clusters = []
+    n_not_clustered = []
+    for i, positions in enumerate(position_history):
+        not_clustered, clusters = getCluster(positions)
+        timestep.append(i)
+        n_clusters.append(len(clusters))
+        n_not_clustered.append(len(not_clustered))
+    cluster_data = [timestep, n_clusters, n_not_clustered]
+    cluster_plot(cluster_data)
+
+
 
 

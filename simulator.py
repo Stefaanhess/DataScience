@@ -16,12 +16,12 @@ import matplotlib.pyplot as plt
 
 ### GLOBAL PARAMETERS
 
-T = 100000
+T = 100
 N = 30
 winWidth = 700
 winHeight = 700
-vision_radius = 200
-
+vision_radius = 80
+position_history = []
 ### CLASS AGENT
 
 class Agent:
@@ -119,7 +119,7 @@ def update_agents():
 
 
 ### Simulation
-def do_simulation(num_agents, num_timesteps, draw_active):
+def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False):
     if draw_active:
         window = GraphWin("Window", winWidth, winHeight, autoflush=False)
         initialize(num_agents, draw_active, window)
@@ -129,14 +129,20 @@ def do_simulation(num_agents, num_timesteps, draw_active):
         print("Timesteps: ", i)
         update_agents()
         window.update()
+        if save_positions:
+            positions = [agent.getPos() for agent in agents]
+            position_history.append(positions)
     if draw_active:
         window.close()
-    return agents 
+    if save_positions:
+        np.save("Evaluation/rnn_positions", position_history)
+    np.save("history_check", agents[0].history)
+    return agents
 
 ### RUN IT
 # plt.ion()
 
 if __name__=='__main__':
-    do_simulation(N, T, True)
-    plot_graphs(means, stds)
+    do_simulation(N, 250, True, False)
+    #plot_graphs(means, stds)
 

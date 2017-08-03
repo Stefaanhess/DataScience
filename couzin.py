@@ -4,8 +4,8 @@ import numpy as np
 
 # Couzin parameters
 Rr = 20
-Ro = 80
-Ra = 200
+Ro = 50
+Ra = 80
 max_turn = 90
 
 def couzin_next_step(aj, agents, norm, noise=2):
