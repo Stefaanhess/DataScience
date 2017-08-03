@@ -1,8 +1,8 @@
 from simulator import *
 
-num_simulations = 2
-T = 200
-N = 20
+num_simulations = 160
+T = 600
+N = 30
 
 tracks = []
 for i in range(num_simulations):

@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 
 ### Variables of the algorithm
 
-min_track_length = 50
+min_track_length = 2
 track_smoothing_window_size = 15
 track_smoothing_std = .5
 num_discretization_bins = 72
 
-num_batches = 100
+num_batches = 10000
 num_hidden = 100  # hochsetzen --> mächtigeres Modell
-batch_size = 6
+batch_size = 20
 
 def splitChunks(t):
     """

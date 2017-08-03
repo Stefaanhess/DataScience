@@ -8,9 +8,9 @@ predict_all = True
 meta_graph = 'meta_graph_1'
 model = 'my-model_1'
 
-sess = tf.Session()
-saver = tf.train.import_meta_graph(meta_graph)
-saver.restore(sess, model)
+#sess = tf.Session()
+#saver = tf.train.import_meta_graph(meta_graph)
+#saver.restore(sess, model)
 
 
 def run_network(aj, agents, norm):

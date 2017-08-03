@@ -117,18 +117,18 @@ def update_agents():
     stds.append(std)
 
 
-    print(getCluster(agents))
 
 ### Simulation
 def do_simulation(num_agents, num_timesteps, draw_active):
     if draw_active:
-        window = GraphWin("Window", winWidth, winHeight)
+        window = GraphWin("Window", winWidth, winHeight, autoflush=False)
         initialize(num_agents, draw_active, window)
     else:
         initialize(num_agents, draw_active, None)
     for i in range(num_timesteps):
         print("Timesteps: ", i)
         update_agents()
+        window.update()
     if draw_active:
         window.close()
     return agents 
