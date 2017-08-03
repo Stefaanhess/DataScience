@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from helperfunctions import *
+import matplotlib
+matplotlib.rcParams.update({'font.size': 18})
+
 
 # evaluate std and mean 
 def evaluate_current_timestep(agents):
@@ -20,17 +23,22 @@ def distance_mean_std(positions):
 # plot evaluation graphs
 def distance_plot(data, outfile):
     timesteps, means, stds = data
-    f, axarr = plt.subplots(2, sharex=True)
+    f, axarr = plt.subplots(2, sharex=True, figsize=(8, 8))
     ax1, ax2 = axarr
-    ax1.plot(timesteps, means)
-    ax1.set_ylabel('Mean Distance')
-    x1,x2,y1,y2 = ax1.axis()
-    ax1.axis((x1, x2, 0, y2))
-    ax2.plot(timesteps, stds)
-    ax2.set_ylabel('Standard Deviation')
+    ax1.plot(timesteps, means, label="mean")
+    ax1.legend(loc=2)
+    ax1.set_ylabel('Pixels')
+    ax1.set_title("Average Particle Distance")
+    ax1.set_ylim([0, max(means)*1.1])
+    ax2.plot(timesteps, stds, label="std")
+    ax2.legend(loc=2)
+    ax2.set_ylabel('Pixels')
+    ax2.set_xlabel('Timesteps')
+    ax2.set_ylim([0, max(stds) * 1.1])
     plt.savefig(outfile)
 
-def getCluster(positions, clustersize=3):
+clustersize = 4
+def getCluster(positions):
     #positions = np.array([ai.getPos() for ai in agents])
     cluster = DBSCAN(eps=40, min_samples=clustersize).fit(positions)
     labels = cluster.labels_
@@ -58,7 +66,7 @@ def cluster_density(positions):
     max_dist = max([np.linalg.norm(mean - position) for position in positions])
     area = np.pi * max_dist**2
     density = len(positions) / area
-    return 1/density
+    return density
 
 def average_cluster_density(clusters):
     av_density = 0
@@ -70,35 +78,45 @@ def average_cluster_density(clusters):
         sum_cluster_size += cluster_size
         av_density += cluster_density(cluster) * cluster_size
     av_density /= sum_cluster_size
-    return av_density
+    return 1/av_density
 
 def cluster_plot(data, outfile):
-    f, axarr = plt.subplots(2, sharex=True)
+    f, axarr = plt.subplots(2, sharex=True, figsize=(8, 8))
     time, n_clusters, not_clustered = data
     ax1, ax2 = axarr
-    ax1.set_title('number of clusters')
-    ax1.plot(time, n_clusters, label='clusters >= 2')
-    ax2.set_title('particles not clustered')
+    ax1.set_title('Number of Clusters')
+    ax1.set_ylabel('N')
+    ax1.plot(time, n_clusters, label='min clustersize = {}'.format(clustersize))
+    ax1.legend(loc=2)
+    ax2.set_title('Particles not Clustered')
     ax2.plot(time, not_clustered)
-    ax2.set_xlabel("timesteps")
+    ax2.set_ylabel('N')
+    ax2.set_xlabel('Timesteps')
     plt.savefig(outfile)
 
 def polarization_plot(data, outfile):
-    f, axarr = plt.subplots(2, sharex=True)
+    f, axarr = plt.subplots(2, sharex=True, figsize=(8, 8))
     time, mean, std = data
     ax1, ax2 = axarr
-    ax1.set_title('mean')
-    ax1.plot(time, mean)
-    ax2.set_title('std')
-    ax2.plot(time, std)
-    ax2.set_xlabel("timesteps")
+    ax1.set_ylim([-180, 180])
+    ax1.set_title('Polarization')
+    ax1.plot(time, mean, label="mean")
+    ax1.legend(loc=2)
+    ax2.set_ylim([0, max(std)*1.1])
+    ax2.plot(time, std, label="std")
+    ax2.legend(loc=2)
+    ax2.set_xlabel('Timesteps')
     plt.savefig(outfile)
 
 def clusterdensity_plot(data, outfile):
-    f, ax1 = plt.subplots(1)
+    f, ax1 = plt.subplots(1, figsize=(8, 8))
     time, cluster_density = data
-    ax1.set_title('average cluster density')
-    ax1.plot(time, cluster_density, label='clusters >= 2')
+    ax1.set_title('Area per Particle')
+    ax1.set_ylabel("Area")
+    ax1.set_xlabel("Timesteps")
+    ax1.set_ylim([0, max(cluster_density)*1.1])
+    ax1.plot(time, cluster_density, label='min clustersize = {}'.format(clustersize))
+    ax1.legend(loc=2)
     plt.savefig(outfile)
 
 def get_polarization(velocities):
