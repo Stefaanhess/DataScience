@@ -104,11 +104,11 @@ def update_agents():
         # Algo 1
         #assimilate_velo(aj, agents, minB, maxB);
         # Algo 2
-        #couzin_next_step(aj, agents, norm)
+        couzin_next_step(aj, agents, norm)
         # Algo 3
         # vicek_next_step
         # Algo 4
-        run_network(aj, agents, norm)
+        #run_network(aj, agents, norm)
     for ai in agents:
         avoid_border_crossing(ai)
         ai.appendTimestep(vision_radius, vision_bins)

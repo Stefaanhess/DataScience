@@ -7,7 +7,7 @@ my-model*
 .idea/
 *.xml
 .idea/workspace.xml
-
+checkpoint
 *.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
