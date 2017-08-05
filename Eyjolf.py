@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 ### Variables of the algorithm
 
 min_track_length = 2
-track_smoothing_window_size = 15
+track_smoothing_window_size = 0
 track_smoothing_std = .5
 num_discretization_bins = 36
 
 num_batches = 2000
 num_hidden = 100  # hochsetzen --> mächtigeres Modell
-batch_size = 20
+batch_size = 2
 
 def splitChunks(t):
     """
@@ -23,9 +23,9 @@ def splitChunks(t):
     Split every track into multiple tracks of 150 length.
     """
     trackChunks = []
-    while (len(t)>=min_track_length+track_smoothing_window_size+3):
-        currentTrack = t[0:min_track_length+track_smoothing_window_size+2]
-        t = t[min_track_length+track_smoothing_window_size+2:len(t)]
+    while (len(t)>=min_track_length+3):
+        currentTrack = t[0:min_track_length]
+        t = t[min_track_length:len(t)]
         trackChunks = trackChunks + [currentTrack]
     return trackChunks
 
@@ -167,7 +167,8 @@ def subsample(track):
 def data_generator(tracks, size=batch_size):
     while True:
         indices = np.random.choice(list(range(len(tracks))), replace=False, size=size)
-        samples = [track for idx, track in enumerate(tracks) if idx in indices]
+        samples = [tracks[idx] for idx in indices]
+        #samples = [track for idx, track in enumerate(tracks) if idx in indices]
         sampled_tracks = np.array(list(map(subsample, samples)))
         digitized_tracks = np.array(list(map(lambda t: digitize_track(t), np.copy(sampled_tracks))))
         yield sampled_tracks, digitized_tracks
@@ -179,7 +180,8 @@ session = tf.Session()
 saver = tf.train.Saver()
 session.run(tf.global_variables_initializer())
 
-saver.restore(session, 'my-model_1')
+# xxx
+#saver.restore(session, 'my-model_1')
 
 train_losses = []
 val_losses = []

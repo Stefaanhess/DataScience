@@ -3,9 +3,9 @@ from helperfunctions import *
 import numpy as np
 
 # Couzin parameters
-Rr = 20
-Ro = 150
-Ra = 300
+Rr = 0
+Ro = 0.1
+Ra = 200
 max_turn = 90
 
 def couzin_next_step(aj, agents, norm, noise=2):

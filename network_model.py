@@ -17,7 +17,8 @@ def run_network(aj, agents, norm, history=2):
     if (len(aj.history)>history):
         track_continuous = np.expand_dims(np.array(aj.history[-history:]), axis=0)
         track_discrete = np.expand_dims(digitize_track(np.array(aj.history[-history:])), axis=0)
-        result = sess.run(['generator/gen_output:0'], feed_dict={'track_continuous:0': track_continuous, 'track_discrete:0': track_discrete})
+        result = sess.run(['generator/gen_output:0'], feed_dict={'track_continuous:0': track_continuous,
+                                                                 'track_discrete:0': track_discrete})
         discretization_bins = np.load("Bins.npy")
         bin_array_x = get_bin_means(discretization_bins[0])
         bin_array_y = get_bin_means(discretization_bins[1])        

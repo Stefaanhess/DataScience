@@ -1,26 +1,23 @@
-
 from graphics import *
 from helperfunctions import *
 from couzin import couzin_next_step
 from simple_model import assimilate_velo
 from vicsek import vicek_next_step
 from tempfile import TemporaryFile
-from network_model import *
+if __name__ == '__main__':
+    from network_model import *
 from evaluation import *
 
 import colorsys
 import tensorflow as tf
 
-import numpy as np
-import matplotlib.pyplot as plt
-
 ### GLOBAL PARAMETERS
 
 T = 500
 N = 30
-winWidth = 700
-winHeight = 700
-vision_radius = 100
+winWidth = 500
+winHeight = 500
+vision_radius = 200
 vision_bins = 36
 position_history = []
 velocity_history = []
@@ -64,8 +61,10 @@ norm = 3
 def initialize(num_agents, draw_active, window):
     global agents
     agents = []
+    rand_width = winWidth * np.sort(np.random.rand(2))
+    rand_height = winHeight * np.sort(np.random.rand(2))
     for i in range(num_agents):
-        agents.append(Agent(winWidth*np.random.random(2),normalize(4*np.random.random(2)-2, norm),'blue'))
+        agents.append(Agent(np.array([np.random.uniform(rand_width[0], rand_width[1]), np.random.uniform(rand_height[0], rand_height[1])]),normalize(4*np.random.random(2)-2, norm),'blue'))
     if draw_active:
         draw_agents(window)
 
@@ -102,13 +101,14 @@ stds = []
 def update_agents():
     for aj in agents:
         # Algo 1
-        #assimilate_velo(aj, agents, minB, maxB);
+        #assimilate_velo(aj, agents, norm)
         # Algo 2
-        couzin_next_step(aj, agents, norm)
+        #couzin_next_step(aj, agents, norm)
         # Algo 3
-        # vicek_next_step
+        #vicek_next_step(aj, agents, norm)
         # Algo 4
-        #run_network(aj, agents, norm)
+        run_network(aj, agents, norm)
+        aj.velo_temp = normalize(aj.velo_temp, norm)
     for ai in agents:
         avoid_border_crossing(ai)
         ai.appendTimestep(vision_radius, vision_bins)
@@ -149,6 +149,11 @@ def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False, 
         np.save("evaluation/rnn_velocities", velocity_history)
     return agents
 
+def save_simulation(num_agents, num_timesteps):
+    initialize(num_agents, False, None)
+    for i in range(num_timesteps):
+        update_agents()
+    return agents
 ### RUN IT
 # plt.ion()
 
@@ -156,6 +161,6 @@ if __name__=='__main__':
     #plt.ion()
     #f, axarr = plt.subplots(2, sharex=True)
     #ax1, ax2 = axarr
-    do_simulation(N, T, True, True, False)
+    do_simulation(N, T, True, False, False)
     #plot_graphs(means, stds)
 
