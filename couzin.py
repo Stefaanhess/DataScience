@@ -3,8 +3,8 @@ from helperfunctions import *
 import numpy as np
 
 # Couzin parameters
-Rr = 0
-Ro = 0.1
+Rr = 20
+Ro = 80
 Ra = 200
 max_turn = 90
 

@@ -14,7 +14,7 @@ import tensorflow as tf
 ### GLOBAL PARAMETERS
 
 T = 500
-N = 30
+N = 20
 winWidth = 500
 winHeight = 500
 vision_radius = 200
@@ -98,17 +98,21 @@ def move_agent(aj):
 means = []
 stds = []
 
-def update_agents():
+def update_agents(algorithm):
     for aj in agents:
         # Algo 1
-        #assimilate_velo(aj, agents, norm)
+        if algorithm == 1:
+            assimilate_velo(aj, agents, norm)
         # Algo 2
-        #couzin_next_step(aj, agents, norm)
+        if algorithm == 2:
+            couzin_next_step(aj, agents, norm)
         # Algo 3
-        #vicek_next_step(aj, agents, norm)
+        if algorithm == 3:
+            vicek_next_step(aj, agents, norm)
         # Algo 4
-        run_network(aj, agents, norm)
-        aj.velo_temp = normalize(aj.velo_temp, norm)
+        if algorithm == 4:
+            run_network(aj, agents, norm)
+            aj.velo_temp = normalize(aj.velo_temp, norm)
     for ai in agents:
         avoid_border_crossing(ai)
         ai.appendTimestep(vision_radius, vision_bins)
@@ -117,7 +121,7 @@ def update_agents():
 
 
 ### Simulation
-def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False, show_vision=False):
+def do_simulation(num_agents, num_timesteps, draw_active, algorithm=2, save_positions=False, show_vision=False):
     if draw_active:
         window = GraphWin("Window", winWidth, winHeight, autoflush=False)
         initialize(num_agents, draw_active, window)
@@ -125,7 +129,7 @@ def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False, 
         initialize(num_agents, draw_active, None)
     for i in range(num_timesteps):
         print("Timesteps: ", i)
-        update_agents()
+        update_agents(algorithm)
         if draw_active:
             window.update()
         if save_positions:
@@ -149,10 +153,10 @@ def do_simulation(num_agents, num_timesteps, draw_active, save_positions=False, 
         np.save("evaluation/rnn_velocities", velocity_history)
     return agents
 
-def save_simulation(num_agents, num_timesteps):
+def save_simulation(num_agents, num_timesteps, algorithm=2):
     initialize(num_agents, False, None)
     for i in range(num_timesteps):
-        update_agents()
+        update_agents(algorithm)
     return agents
 ### RUN IT
 # plt.ion()
@@ -161,6 +165,6 @@ if __name__=='__main__':
     #plt.ion()
     #f, axarr = plt.subplots(2, sharex=True)
     #ax1, ax2 = axarr
-    do_simulation(N, T, True, False, False)
+    do_simulation(N, T, True, 4, False, False)
     #plot_graphs(means, stds)
 
