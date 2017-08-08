@@ -1,12 +1,14 @@
 from helperfunctions import *
+from Settings import Settings
 
 import numpy as np
 
 # Couzin parameters
-Rr = 20
-Ro = 80
-Ra = 200
-max_turn = 90
+settings = Settings()
+Rr = settings.Rr
+Ro = settings.Ro
+Ra = settings.Ra
+max_turn = settings.max_turn
 
 def couzin_next_step(aj, agents, norm, noise=2):
     """Asses the next step for a single agent according to the Couzin paper."""

@@ -7,18 +7,22 @@ from tempfile import TemporaryFile
 if __name__ == '__main__':
     from network_model import *
 from evaluation import *
+from Settings import Settings
 
 import colorsys
 import tensorflow as tf
 
 ### GLOBAL PARAMETERS
+settings = Settings()
 
-T = 500
-N = 20
-winWidth = 500
-winHeight = 500
-vision_radius = 200
-vision_bins = 36
+T = 5000
+N = settings.N
+winWidth = settings.winWidth
+winHeight = settings.winHeight
+vision_radius = settings.vision_radius
+vision_bins = settings.vision_bins
+norm = settings.norm
+
 position_history = []
 velocity_history = []
 ### CLASS AGENT
@@ -54,8 +58,7 @@ class Agent:
 
 ### GLOBAL PARAMETERS
 agents = []
-norm = 3
-   
+
 ### SETTING UP THE WORLD    
 
 def initialize(num_agents, draw_active, window):

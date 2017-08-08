@@ -196,6 +196,12 @@ def merge_data_sets(files):
     merged_array = np.concatenate(arrays)
     np.save("Tracks/merged_tracks", merged_array)
 
+def merge_tracks_to_file(merge_file, tracks):
+    arrays = [np.load(merge_file), tracks]
+    arrays = tuple(arrays)
+    merged_array = np.concatenate(arrays)
+    np.save(merge_file, merged_array)
+
 def get_spaced_colors(n):
     """Get n distinct RGB values"""
     max_value = 16581375 #255**3

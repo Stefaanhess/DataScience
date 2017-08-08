@@ -7,17 +7,20 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import time
 import datetime
+from Settings import Settings
 
 ### Variables of the algorithm
 
-min_track_length = 2
-num_discretization_bins = 36
+settings = Settings()
+min_track_length = settings.min_track_length
+num_discretization_bins = settings.num_discretization_bins
+file = settings.outfile
 restore = False
 
-num_batches = 20000
+num_batches = 5000
 num_hidden = 100  # hochsetzen --> mächtigeres Modell
 batch_size = 20
-folder = 'Graphs/20_80_200/'
+folder = settings.folder
 
 def splitChunks(t):
     """
@@ -42,7 +45,7 @@ def split_all_tracks(np_array):
         tracks = tracks + [chunks]
     return tracks
 
-tracks = np.load("Tracks/Tracks_20_80_200.npy")
+tracks = np.load(file)
 #tracks_1 = np.split(np.array(np_tracks),5,axis=1)
 #tracks = np.concatenate(np.array(tracks_1))
 
@@ -176,8 +179,9 @@ def subsample(track):
 def data_generator(tracks, size=batch_size):
     while True:
         indices = np.random.choice(list(range(len(tracks))), replace=False, size=size)
-        samples = [tracks[idx] for idx in indices]
-        #samples = [track for idx, track in enumerate(tracks) if idx in indices]
+        # not shure about this???
+        #samples = [tracks[idx] for idx in indices]
+        samples = [track for idx, track in enumerate(tracks) if idx in indices]
         sampled_tracks = np.array(list(map(subsample, samples)))
         digitized_tracks = np.array(list(map(lambda t: digitize_track(t), np.copy(sampled_tracks))))
         #print(sampled_tracks)
@@ -200,12 +204,12 @@ val_losses = []
 start_time = time.time()
 for batch_idx in range(num_batches):
     samples_continuous, samples_discrete = next(train_gen)
-    batch_loss, _ = session.run([loss, update], feed_dict={track_continuous: samples_discrete,
+    batch_loss, _ = session.run([loss, update], feed_dict={track_continuous: samples_continuous,
                                               track_discrete: samples_discrete})
     train_losses.append(batch_loss)
     
     samples_continuous, samples_discrete = next(val_gen)
-    batch_loss = session.run(loss, feed_dict={track_continuous: samples_discrete,
+    batch_loss = session.run(loss, feed_dict={track_continuous: samples_continuous,
                                               track_discrete: samples_discrete})
     val_losses.append(batch_loss)
     iter_time = (time.time() - start_time)/(batch_idx+1)
